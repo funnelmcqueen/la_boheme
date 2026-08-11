@@ -121,10 +121,34 @@ not one. Stop the dev server before building. A separate `distDir` for builds wa
 tried and is worse: both dirs emit generated route types, tsconfig picks up both,
 and the two `LayoutRoutes` unions collide.
 
+## Blocked on material we do not have
+
+Three photographs are missing. Each ships as a slot that is visibly unfinished
+rather than a stand-in that would read as a decision — a substitute photograph in
+the right shape is the hardest kind of placeholder to notice later.
+
+**The chef's portrait.** BUILD-BRIEF §11 gives the crop as `150, 372, 1230, 1722`
+and notes that anything above y=372 includes "the screenshot's own chrome". That
+makes the source a screen capture at least 1380px wide; the delivered set is all
+camera originals at 2160×2700 and above, and no frame in it can take that crop. The
+owner has said the source is an Instagram capture on his side and a camera original
+may exist with the client. Until it arrives, `components/sections/Sections.module.css`
+renders `.portraitPending` at the crop's own proportion so the section will not need
+re-laying out. It runs **ungraded** when it lands — see `content/images.ts`.
+
+**A night table set for a celebration**, for Mbrëmje. The section currently runs a
+dusk-graded daylight frame darkened in CSS, which is a placeholder, not a grade.
+
+**A cellar photograph.** Verërat runs on type and one portrait, which works, but a
+real image is better.
+
 ## Open
 
 - The eight items in CLAUDE-CODE-PROMPT "Still open" are untouched. No invented
   species name, no invented quote, no producer logos.
+- **The depth bands have drifted from §9's table** — see the last section of this
+  file. Needs a ruling: either the table describes the mockup's shorter menu and
+  this is fine, or the page order wants rebalancing.
 
 ## Slice 4 — the seascape
 
@@ -151,7 +175,7 @@ the only way out. Measured: `vy ≈ −1.4` against a cruising speed of 25.9. Th
 is now taken against cruising speed, and both species relax their axis constraint
 near the mark — the fish already had that; the octopus had no equivalent.
 
-### Open — the shoal swims at the edges
+### The shoal swims at the edges — *resolved, see below*
 
 At 486px the emblem's exclusion ellipse, padded by a creature's half width, spans
 the entire usable width of the 749px water column. There is no clear middle, so the
@@ -161,9 +185,11 @@ too — measured centres across a 749px column, after ten seconds:
     mockup  −30 −30 −30 −30 −30 −15 −5 101 112 584 584
     ours    −30 −30 −30 −30 −30 −30 −30 −24 −10 85 115
 
-Faithful, in other words, but worth a decision. The ellipse covers the whole mark
-including the wordmark, which is what CLAUDE-CODE-PROMPT specifies; scoping it to
-the dome alone would give the water a middle to swim in.
+The ellipse then covered the whole mark including the wordmark, which is what
+CLAUDE-CODE-PROMPT specifies. Scoping it to the dome was ruled in, and the rest of
+this file records what that took. Creatures now split both sides, as the mockup
+does. **Do not act on this section on its own** — it is the start of a thread, not
+its conclusion.
 
 ### Axis constraints need a stated exception
 
@@ -177,9 +203,17 @@ had this (`(0.22 + 1.30 × near)`); the octopus did not.
 
 ### The keep-out is the dome, and the wordmark is fine without one
 
-Verified over thirty seconds at 250ms: **zero** samples of any creature box
-overlapping the wordmark, zero overlapping the dome, zero clamp firings. The
-lockup did not need covering.
+The lockup did not need covering. Type on a solid baseline tolerates a fish passing
+behind it far better than the rosette does, and an ellipse over the whole mark left
+the water column with no middle at all.
+
+Measured twice, and the first measurement was misleading. In the **placeholder**
+layout it came back clean immediately — zero wordmark overlaps, zero dome overlaps,
+zero clamp firings over thirty seconds. In the **real hero**, where the emblem and
+the water finally sit in their true relationship, the same measurement came back
+799 clamp firings and 60 wordmark overlaps, every one of them an octopus. Both
+numbers below were needed to get back to zero. Do not tune the seascape against a
+placeholder layout; it will tell you it is fine.
 
 It did not open up the column, though, and the reason is geometric rather than
 tunable. With a 486px mark in a 749px water column:
