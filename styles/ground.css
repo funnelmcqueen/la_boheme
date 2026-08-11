@@ -1,0 +1,61 @@
+/**
+ * The ground.
+ *
+ * One fixed layer behind the whole document, lerped by the depth engine. Sections
+ * paint no background of their own — body, the story and the footer are all
+ * transparent, and only the carte's cream sheet keeps a fill. That is what makes
+ * the descent read as one continuous fall rather than as a stack of gradients.
+ */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  /* The chrome sentinels are absolutely positioned at the top of the document. */
+  position: relative;
+  background: transparent;
+  color: var(--body);
+  font-family: var(--vj-body);
+  font-weight: 300;
+  line-height: 1.65;
+  -webkit-font-smoothing: antialiased;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}
+
+.vj-ground {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background: var(--ground);
+  pointer-events: none;
+}
+
+/* Grain sits over everything, including the photographs, so the page holds
+   together as one printed surface rather than as images pasted on a colour. */
+.vj-grain {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  opacity: 0.055;
+  pointer-events: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size: 180px 180px;
+}
+
+img {
+  display: block;
+  max-width: 100%;
+}

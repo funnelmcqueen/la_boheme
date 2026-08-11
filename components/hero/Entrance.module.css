@@ -1,0 +1,19 @@
+/**
+ * The scrim darkens to the water's own surface colour behind the travelling mark,
+ * then clears. It never blocks a click and never covers content that has not
+ * already painted.
+ */
+.scrim {
+  position: fixed;
+  inset: 0;
+  z-index: 150;
+  background: var(--ground);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 1.1s ease;
+}
+
+:global(html[data-entrance="running"]) .scrim {
+  opacity: 1;
+  transition: none;
+}

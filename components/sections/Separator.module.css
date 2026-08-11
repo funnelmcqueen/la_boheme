@@ -1,0 +1,39 @@
+.fleuron {
+  display: block;
+  width: 58px;
+  color: var(--lamp);
+}
+
+.fleuron svg {
+  width: 100%;
+  height: auto;
+  display: block;
+  /* Not inherited, and the stroke would otherwise scale with the viewBox. */
+  vector-effect: non-scaling-stroke;
+}
+
+.fleuron path,
+.fleuron circle {
+  vector-effect: non-scaling-stroke;
+}
+
+.chapter {
+  display: grid;
+  justify-items: center;
+  gap: 10px;
+}
+
+/* 112px at the chapter divider — the emblem recurring at its second size. */
+.chapterMark {
+  width: 112px;
+}
+
+.chapterLabel {
+  font-family: var(--vj-display);
+  font-size: 13px;
+  letter-spacing: 0.34em;
+  text-indent: 0.34em;
+  text-transform: uppercase;
+  color: var(--lamp);
+  white-space: nowrap;
+}

@@ -1,0 +1,65 @@
+/**
+ * The token layer.
+ *
+ * Every value under "the descent" below is the 0m stop of a ramp in
+ * components/depth/depth.ts, duplicated here so first paint is already at the
+ * surface — no flash, nothing to hydrate. styles/tokens.test.ts fails the build
+ * if the two ever disagree.
+ *
+ * The DepthEngine overwrites all of them as inline style on <html>, which beats
+ * any cascade layer. Nothing else on the page may set them except a section
+ * deliberately re-inking itself.
+ */
+
+:root {
+  /* ---------- the descent, at 0m ---------- */
+  --depth: 0.0;
+  --ground: rgb(24, 64, 84);
+  --lamp: rgb(222, 133, 115);
+  --acc: rgb(232, 120, 96);
+  --bone: rgb(246, 235, 222);
+  --body: rgb(232, 218, 203);
+  --shell: rgb(188, 132, 88);
+  --logo: rgb(222, 133, 115);
+  --deep: 0;
+  --imgfx: saturate(1) brightness(1.04);
+
+  /* ---------- fixed points ---------- */
+
+  /* The logo brown exactly as printed. 9.81:1 on the cream carte, 1.20:1 on the
+     water — light grounds only, and never interpolated, because it is an ink.
+     --brand is the mockup's name for it and stays as an alias. */
+  --logo-true: #482720;
+  --brand: var(--logo-true);
+
+  /* A filled button's label. Deep water-blue, not the page's near-black, so the
+     fill reads as lit rather than as a hole. 5.08:1 on the surface lamp colour. */
+  --btn-label: #10303F;
+
+  /* The printed menu paper. The one fill left on the page: everything else is
+     transparent over the ground, so the carte reads as the single warm object. */
+  --sand: #E9DCCB;
+  --sand-2: #DCCBB6;
+  --sand-ink: #3E3225;
+  --sand-head: #2E251A;
+
+  --line: rgba(242, 235, 225, 0.14);
+
+  /* Published by the components that own them — see usePublishedHeight. These are
+     the no-JS defaults, measured rather than guessed. */
+  --vj-header-h: 78px;
+
+  /* Type. next/font owns --font-display and --font-body and sets them by class on
+     <html>; these read through to them and fall back if the faces fail to load.
+     Deliberately different names — declaring --font-display here too would put two
+     equal-specificity rules on the same element and leave the winner to source
+     order, which is not a thing to leave to chance. */
+  --vj-display: var(--font-display, "Didot", "Bodoni 72", Georgia, serif);
+  --vj-body: var(--font-body, "Helvetica Neue", system-ui, sans-serif);
+}
+
+/* The emblem is the one fixed point in the descent. The water changes around the
+   mark; the mark does not change. Flat white, fully opaque, at every depth. */
+:root {
+  --emblem: #FFFFFF;
+}

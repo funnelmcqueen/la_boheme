@@ -1,0 +1,85 @@
+.header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 90;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 20px clamp(28px, 4.5vw, 76px);
+  background: none;
+  transition: background 0.4s ease, padding 0.4s ease;
+}
+
+/**
+ * Once it leaves the top it takes the ground's own colour, so it stays part of the
+ * water rather than becoming a bar sitting on top of it — and because --ground is
+ * the descent's own token, it darkens as the page does without another rule.
+ */
+:global(html[data-stuck="true"]) .header {
+  background: var(--ground);
+  padding-block: 12px;
+  border-bottom: 1px solid var(--line);
+}
+
+.mark {
+  text-decoration: none;
+  color: inherit;
+  line-height: 1;
+}
+
+.master {
+  display: block;
+  font-family: var(--vj-display);
+  font-size: 15px;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--bone);
+}
+
+.venue {
+  display: block;
+  margin-top: 5px;
+  font-family: var(--vj-body);
+  font-size: 8.5px;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: var(--lamp);
+}
+
+.nav {
+  display: flex;
+  gap: 30px;
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+}
+
+.link {
+  color: var(--bone);
+  opacity: 0.72;
+  text-decoration: none;
+  transition: opacity 0.25s ease, color 0.25s ease;
+}
+
+@media (hover: hover) {
+  .link:hover {
+    opacity: 1;
+    color: var(--lamp);
+  }
+}
+
+@media (max-width: 820px) {
+  .nav {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .header,
+  .link {
+    transition: none;
+  }
+}

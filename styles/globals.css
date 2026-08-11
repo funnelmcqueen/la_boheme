@@ -1,0 +1,15 @@
+/**
+ * Layer order is declared before anything is imported, so Tailwind's utilities
+ * sit after ours and can still override a layout default. Our own rules live in
+ * `vajana` rather than unlayered — unlayered CSS beats every layer regardless of
+ * specificity, which would silently make `section{padding:...}` win over a
+ * Tailwind utility and make the utilities useless for the thing we keep them for.
+ */
+@layer theme, base, vajana, components, utilities;
+
+@import "tailwindcss";
+
+@import "./tokens.css" layer(vajana);
+@import "./ground.css" layer(vajana);
+@import "./type.css" layer(vajana);
+@import "./rhythm.css" layer(vajana);

@@ -1,0 +1,56 @@
+.bar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 80;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 13px clamp(28px, 4.5vw, 76px);
+  font-family: var(--vj-body);
+  font-size: 9.5px;
+  letter-spacing: 0.26em;
+  text-transform: uppercase;
+  color: var(--shell);
+  background: linear-gradient(to top, var(--ground), transparent);
+  pointer-events: none;
+
+  opacity: 0;
+  transition: opacity 0.6s ease;
+}
+
+:global(html[data-past="true"]) .bar {
+  opacity: 1;
+}
+
+.depth {
+  display: flex;
+  align-items: baseline;
+  gap: 7px;
+  color: var(--lamp);
+}
+
+.label {
+  color: var(--shell);
+}
+
+.metres {
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Below 820px the bottom of the screen belongs to the call bar. */
+@media (max-width: 820px) {
+  .bar {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bar {
+    transition: none;
+  }
+}

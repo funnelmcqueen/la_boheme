@@ -1,0 +1,245 @@
+/**
+ * The water column. Layers, all slow, all negative-delayed so the water is
+ * already moving on first paint: a depth gradient, caustics off the surface,
+ * drifting shafts, the shoal, suspended matter, and the wave fronts.
+ */
+.sea {
+  --vj-ox: 36%;
+  --vj-oy: 25.5%;
+  --vj-hole: 140px;
+  --vj-s0: 0.26;
+
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 52%;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+
+  /* Faded out to the right, downward, and around the mark, so the water never
+     competes with the type or crowds the emblem. */
+  mask-image:
+    linear-gradient(90deg, #000 74%, transparent 100%),
+    linear-gradient(180deg, #000 46%, rgba(0, 0, 0, 0.35) 74%, rgba(0, 0, 0, 0.12) 100%),
+    radial-gradient(circle at var(--vj-ox) var(--vj-oy),
+      transparent 0, transparent var(--vj-hole), #000 calc(var(--vj-hole) * 2.1));
+  mask-composite: intersect;
+}
+
+.sea::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg,
+    rgba(199, 154, 98, 0.145) 0%,
+    rgba(181, 118, 82, 0.09) 28%,
+    rgba(140, 110, 120, 0.075) 58%,
+    rgba(94, 80, 101, 0.115) 100%);
+}
+
+@media (max-width: 1000px) {
+  .sea {
+    width: 100%;
+  }
+}
+
+/* Surface light broken up and thrown down into the first few metres. */
+.caustics {
+  position: absolute;
+  left: -20%;
+  right: -20%;
+  top: -14%;
+  height: 88%;
+  background:
+    radial-gradient(40% 26% at 20% 16%, rgba(233, 186, 116, 0.21), transparent 62%),
+    radial-gradient(32% 22% at 60% 32%, rgba(199, 154, 98, 0.16), transparent 64%),
+    radial-gradient(46% 28% at 86% 10%, rgba(241, 205, 150, 0.15), transparent 60%),
+    radial-gradient(34% 22% at 44% 58%, rgba(155, 138, 160, 0.13), transparent 66%);
+  filter: blur(26px);
+  mix-blend-mode: screen;
+}
+
+.a {
+  animation: vj-caust 46s ease-in-out infinite alternate;
+}
+
+.b {
+  opacity: 0.7;
+  animation: vj-caust-b 63s ease-in-out -22s infinite alternate;
+}
+
+@keyframes vj-caust {
+  0% { transform: translate3d(-3%, 0, 0) scale(1); }
+  50% { transform: translate3d(3%, 1.6%, 0) scale(1.09); }
+  100% { transform: translate3d(-2%, -1%, 0) scale(1.02); }
+}
+
+@keyframes vj-caust-b {
+  0% { transform: scaleX(-1) translate3d(2%, 0, 0) scale(1.04); }
+  50% { transform: scaleX(-1) translate3d(-3%, 2%, 0) scale(1); }
+  100% { transform: scaleX(-1) translate3d(1%, -1%, 0) scale(1.08); }
+}
+
+.shaft {
+  position: absolute;
+  top: 18%;
+  height: 130%;
+  width: 20vw;
+  background: linear-gradient(90deg, transparent, rgba(180, 214, 232, 0.055), transparent);
+  filter: blur(34px);
+  animation: vj-shaft ease-in-out infinite alternate;
+}
+
+@keyframes vj-shaft {
+  from { transform: rotate(11deg) translateX(-9vw) scaleY(1); }
+  to { transform: rotate(11deg) translateX(9vw) scaleY(1.06); }
+}
+
+.surface {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 8%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(233, 186, 116, 0.38), transparent);
+  filter: blur(0.4px);
+  animation: vj-swell 15s ease-in-out infinite;
+}
+
+@keyframes vj-swell {
+  0%, 100% { transform: translateY(0) scaleY(1); opacity: 0.45; }
+  50% { transform: translateY(9px) scaleY(1.8); opacity: 0.95; }
+}
+
+/* ---------- the swimmers ---------- */
+
+.creature {
+  position: absolute;
+  left: 0;
+  top: 0;
+  will-change: transform;
+  color: var(--lamp);
+}
+
+.creature svg {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.creature :global(.d),
+.creature :global(.eng) {
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 1.5;
+  vector-effect: non-scaling-stroke;
+}
+
+/* The violet of the potato bed appears in the water. */
+.octopus {
+  color: var(--bed, #9b8aa0);
+}
+
+.prawn {
+  color: var(--acc);
+}
+
+/**
+ * Propulsion. A creature drifting with no cue reads as litter — but rotating one
+ * to fake swimming reads as tumbling and fights the heading the loop is setting
+ * on the parent. So the cue is scale and lateral offset only, and it lives on
+ * this inner element, which the loop never touches.
+ */
+.cue {
+  display: block;
+  animation: vj-beat cubic-bezier(0.45, 0, 0.55, 1) infinite alternate;
+}
+
+/* A fish undulates. */
+@keyframes vj-beat {
+  from { transform: scaleX(1.02) scaleY(0.985) translateY(-0.5px); }
+  to { transform: scaleX(0.985) scaleY(1.015) translateY(0.5px); }
+}
+
+/* An octopus pulses its mantle. */
+.octopus .cue {
+  animation-name: vj-pulse;
+  animation-timing-function: cubic-bezier(0.4, 0, 0.5, 1);
+}
+
+@keyframes vj-pulse {
+  from { transform: scale(1.045, 0.955); }
+  to { transform: scale(0.96, 1.05); }
+}
+
+/* A prawn flicks laterally. */
+.prawn .cue {
+  animation-name: vj-flick;
+  animation-timing-function: cubic-bezier(0.3, 0, 0.2, 1);
+  animation-direction: normal;
+}
+
+@keyframes vj-flick {
+  0%, 76% { transform: translateX(0) scaleX(1); }
+  86% { transform: translateX(-4px) scaleX(0.94); }
+  100% { transform: translateX(0) scaleX(1); }
+}
+
+.mote {
+  position: absolute;
+  left: 0;
+  top: 0;
+  border-radius: 50%;
+  background: var(--plate, #c6bcb2);
+  will-change: transform;
+  display: block;
+}
+
+/* ---------- the wave ---------- */
+
+.wave {
+  position: absolute;
+  left: var(--vj-ox);
+  top: var(--vj-oy);
+  width: 0;
+  height: 0;
+  z-index: 6;
+}
+
+.wave svg {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 70vw;
+  height: 70vw;
+  margin: -35vw 0 0 -35vw;
+  overflow: visible;
+  animation: vj-swellout linear infinite;
+  /* Only the upper half — a full ring would read as sonar. */
+  mask-image: linear-gradient(180deg, #000 0 50%, transparent 50%);
+}
+
+.wave path {
+  fill: none;
+  stroke: #ffffff;
+  stroke-width: 3;
+  stroke-linejoin: round;
+  vector-effect: non-scaling-stroke;
+}
+
+@keyframes vj-swellout {
+  0% { transform: scale(var(--vj-s0)) rotate(0deg); opacity: 0; }
+  7% { opacity: 0.85; }
+  58% { opacity: 0.42; }
+  100% { transform: scale(1) rotate(22deg); opacity: 0; }
+}
+
+/* The seascape is motion in the vestibular sense and stops entirely. The descent
+   does not — see DepthEngine. */
+@media (prefers-reduced-motion: reduce) {
+  .sea {
+    display: none;
+  }
+}

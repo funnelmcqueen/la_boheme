@@ -1,0 +1,194 @@
+/**
+ * The cream sheet. The only fill left on the page — everything else is transparent
+ * over the ground — so on blue water it reads as paper laid on the sea.
+ *
+ * On sand the logo brown is the strongest ink available (9.81:1) and --shell fails
+ * outright, so nothing here uses it.
+ */
+.section {
+  position: relative;
+}
+
+.tabs {
+  display: flex;
+  justify-content: center;
+  gap: clamp(20px, 3vw, 40px);
+  margin-bottom: clamp(30px, 4vw, 54px);
+}
+
+.tab {
+  appearance: none;
+  background: none;
+  border: 0;
+  padding: 0 0 7px;
+  font-family: var(--vj-body);
+  font-size: 11px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--shell);
+  cursor: pointer;
+  border-bottom: 1px solid transparent;
+  transition: color 0.3s ease, border-color 0.3s ease;
+}
+
+.on {
+  color: var(--bone);
+  border-bottom-color: var(--lamp);
+}
+
+.sheet {
+  background: var(--sand);
+  color: var(--sand-ink);
+  max-width: 760px;
+  margin: 0 auto;
+  padding: clamp(34px, 5vw, 64px) clamp(22px, 4vw, 58px) clamp(40px, 5vw, 66px);
+  /* A hairline in the real logo brown, the way the printed card is trimmed. */
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--logo-true) 26%, transparent);
+  scroll-margin-top: calc(var(--vj-header-h, 78px) + 24px);
+}
+
+.masthead {
+  text-align: center;
+  margin-bottom: clamp(28px, 4vw, 46px);
+}
+
+.master {
+  display: block;
+  font-family: var(--vj-display);
+  font-size: 15px;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--sand-head);
+}
+
+.venue {
+  display: block;
+  margin-top: 6px;
+  font-family: var(--vj-body);
+  font-size: 8.5px;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: var(--logo-true);
+}
+
+.ornament {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  margin-top: 16px;
+}
+
+.ornament i {
+  width: 14px;
+  height: 1px;
+  background: color-mix(in srgb, var(--logo-true) 45%, transparent);
+}
+
+.ornament b {
+  width: 3.5px;
+  height: 3.5px;
+  border-radius: 50%;
+  background: var(--logo-true);
+}
+
+.group + .group {
+  margin-top: clamp(30px, 4vw, 52px);
+}
+
+.groupTitle {
+  font-family: var(--vj-display);
+  font-weight: 400;
+  font-size: clamp(23px, 2.6vw, 31px);
+  text-align: center;
+  color: var(--sand-head);
+  margin: 0 0 4px;
+}
+
+.note {
+  text-align: center;
+  font-style: italic;
+  font-size: 13px;
+  color: color-mix(in srgb, var(--sand-ink) 72%, transparent);
+  margin: 0 0 22px;
+  max-width: none;
+}
+
+.dishes,
+.wines {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+/**
+ * Name, leader, price on one line; the description underneath. A grid rather than
+ * a flex row so the leader takes exactly the space left over and every price in
+ * the column lands on the same right edge.
+ */
+.row {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: baseline;
+  column-gap: 8px;
+  padding: 9px 0;
+}
+
+.dishes .row + .row {
+  border-top: 1px dashed color-mix(in srgb, var(--logo-true) 22%, transparent);
+}
+
+.name {
+  font-family: var(--vj-display);
+  font-size: 17px;
+  color: var(--sand-head);
+}
+
+.leader {
+  border-bottom: 1px dotted color-mix(in srgb, var(--logo-true) 40%, transparent);
+  transform: translateY(-3px);
+}
+
+/* The price is the logo brown, exactly as printed. */
+.price {
+  font-family: var(--vj-body);
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--logo-true);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.desc {
+  grid-column: 1 / -1;
+  font-style: italic;
+  font-size: 13px;
+  line-height: 1.5;
+  color: color-mix(in srgb, var(--sand-ink) 76%, transparent);
+  margin-top: 2px;
+}
+
+/* The wine list is name and price only — no descriptions, tighter rhythm. Its
+   length is the argument, so it is set to be read as a list. */
+.wines .row {
+  padding: 6px 0;
+}
+
+.wines .name {
+  font-size: 15px;
+}
+
+.allergy {
+  margin: clamp(30px, 4vw, 48px) 0 0;
+  text-align: center;
+  font-style: italic;
+  font-size: 12px;
+  color: color-mix(in srgb, var(--sand-ink) 70%, transparent);
+  max-width: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tab {
+    transition: none;
+  }
+}

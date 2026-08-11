@@ -1,0 +1,37 @@
+.readout {
+  position: fixed;
+  /* Top-right, clear of the status bar's own depth reading at the bottom. */
+  right: 14px;
+  top: 92px;
+  z-index: 120;
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  padding: 8px 14px;
+  border: 1px solid var(--lamp);
+  background: color-mix(in srgb, var(--ground) 82%, transparent);
+  color: var(--lamp);
+  font-family: var(--vj-body);
+  font-size: 11px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  pointer-events: none;
+}
+
+
+.metres {
+  font-size: 16px;
+  letter-spacing: 0.06em;
+  font-variant-numeric: tabular-nums;
+}
+
+.unit {
+  opacity: 0.7;
+}
+
+.ground {
+  margin-left: 8px;
+  font-size: 9.5px;
+  letter-spacing: 0.14em;
+  opacity: 0.65;
+}

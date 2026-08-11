@@ -1,0 +1,439 @@
+/**
+ * Sections paint no background of their own. body, the story and the footer are
+ * all transparent over the ground; only the carte keeps a fill.
+ *
+ * Photographs carry --imgfx, the depth-driven filter, so they lose saturation and
+ * warmth the way they would underwater.
+ */
+.split {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: clamp(30px, 5vw, 76px);
+  align-items: center;
+}
+
+.split img {
+  width: 100%;
+  height: auto;
+  display: block;
+  filter: var(--imgfx);
+}
+
+@media (max-width: 900px) {
+  .split {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ---------- Atmosfera ---------- */
+
+/* Padding lives here, never in a style attribute: an inline value beats the
+   :has() separator collapse rules and the divider below goes quietly wrong. */
+.intro {
+  padding-bottom: clamp(30px, 3.4vw, 52px);
+}
+
+.strip {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  padding: 0;
+}
+
+.frame {
+  position: relative;
+  margin: 0;
+  overflow: hidden;
+}
+
+.frame img {
+  width: 100%;
+  height: 100%;
+  aspect-ratio: 4 / 5;
+  object-fit: cover;
+  display: block;
+  filter: var(--imgfx);
+}
+
+/* The captions sit on high-key daylight frames, where --lamp at 9.5px disappears.
+   A scrim rather than a text shadow: the type stays clean and the photograph keeps
+   its own grade. */
+.frame::after {
+  content: "";
+  position: absolute;
+  inset: auto 0 0 0;
+  height: 46%;
+  background: linear-gradient(to top, rgba(4, 14, 22, 0.72), transparent);
+  pointer-events: none;
+}
+
+.frameCaption {
+  position: absolute;
+  z-index: 1;
+  left: clamp(14px, 2vw, 26px);
+  bottom: clamp(14px, 2vw, 24px);
+  display: grid;
+  gap: 4px;
+}
+
+.frameTime {
+  font-family: var(--vj-body);
+  font-size: 9.5px;
+  letter-spacing: 0.26em;
+  color: var(--lamp);
+}
+
+.frameLabel {
+  font-family: var(--vj-display);
+  font-size: clamp(19px, 2vw, 27px);
+  color: var(--emblem);
+}
+
+@media (max-width: 700px) {
+  .strip {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ---------- Kuzhina ---------- */
+
+.portrait {
+  position: relative;
+}
+
+/**
+ * The slot for the chef. Sized to the documented crop's proportion (1230×1722) so
+ * the section does not need re-laying out when the frame arrives, and marked as
+ * unfinished rather than filled with a stand-in that would read as a decision.
+ */
+.portraitPending {
+  aspect-ratio: 1230 / 1722;
+  border: 1px dashed color-mix(in srgb, var(--lamp) 34%, transparent);
+}
+
+.chefName {
+  margin-bottom: 4px;
+}
+
+.role {
+  font-family: var(--vj-body);
+  font-size: 10.5px;
+  letter-spacing: 0.34em;
+  text-transform: uppercase;
+  color: var(--lamp);
+  margin-bottom: 22px;
+}
+
+.quote {
+  margin: 0 0 22px;
+  font-family: var(--vj-display);
+  font-size: clamp(19px, 1.9vw, 25px);
+  line-height: 1.45;
+  color: var(--bone);
+}
+
+.instagram {
+  font-size: 13px;
+  color: var(--shell);
+}
+
+/* ---------- house signatures ---------- */
+
+.signatures {
+  text-align: center;
+}
+
+.signatureHeading {
+  font-size: clamp(26px, 3.4vw, 42px);
+}
+
+.signatureNote {
+  margin-inline: auto;
+}
+
+.dishes {
+  list-style: none;
+  margin: clamp(34px, 5vw, 60px) 0 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: clamp(24px, 4vw, 54px);
+}
+
+.dish {
+  display: grid;
+  justify-items: center;
+}
+
+.dishMark {
+  width: 92px;
+  margin-bottom: 16px;
+}
+
+.dishName {
+  font-size: clamp(17px, 1.6vw, 21px);
+  margin-bottom: 7px;
+}
+
+.dishDesc {
+  font-size: 13.5px;
+  line-height: 1.55;
+  max-width: 30ch;
+  margin: 0;
+}
+
+.dishPrice {
+  white-space: nowrap;
+  color: var(--acc);
+}
+
+@media (max-width: 780px) {
+  .dishes {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ---------- the catch ---------- */
+
+.species {
+  list-style: none;
+  margin: 26px 0 0;
+  padding: 0;
+  columns: 2;
+  column-gap: clamp(20px, 3vw, 44px);
+}
+
+.species li {
+  display: flex;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 7px 0;
+  border-bottom: 1px solid var(--line);
+  break-inside: avoid;
+  font-size: 14px;
+}
+
+.perKilo {
+  color: var(--acc);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.stack {
+  display: grid;
+  gap: clamp(16px, 2vw, 26px);
+}
+
+@media (max-width: 560px) {
+  .species {
+    columns: 1;
+  }
+}
+
+/* ---------- the houses ---------- */
+
+.marquee {
+  margin-top: clamp(34px, 5vw, 60px);
+  overflow: hidden;
+  /* Names enter and leave rather than popping. */
+  mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+}
+
+.track {
+  display: flex;
+  width: max-content;
+  animation: vj-marquee 46s linear infinite;
+}
+
+.track:hover {
+  animation-play-state: paused;
+}
+
+/* The track holds the list twice and moves by exactly half its own width, so at
+   the restart the second copy stands where the first began and there is no seam. */
+@keyframes vj-marquee {
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+.run {
+  display: flex;
+}
+
+.house {
+  display: grid;
+  gap: 3px;
+  padding-inline: clamp(20px, 3vw, 44px);
+  border-left: 1px solid var(--line);
+  white-space: nowrap;
+}
+
+.houseName {
+  font-family: var(--vj-display);
+  font-size: clamp(17px, 1.7vw, 23px);
+  color: var(--bone);
+}
+
+.houseWhere {
+  font-family: var(--vj-body);
+  font-size: 9.5px;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--shell);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .track {
+    animation: none;
+  }
+}
+
+/* ---------- evenings ---------- */
+
+.evening {
+  position: relative;
+  overflow: hidden;
+  padding-block: clamp(120px, 16vw, 220px);
+}
+
+.eveningPhoto {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  z-index: -1;
+  /* The frame is a dusk-graded daylight shot standing in for a night table — see
+     the blocked list. Darkened here so the section reads at its depth. */
+  filter: var(--imgfx) brightness(0.52) saturate(0.8);
+}
+
+.eveningText {
+  position: relative;
+}
+
+.buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 26px;
+}
+
+/* ---------- the story ---------- */
+
+.story {
+  text-align: center;
+}
+
+.storyInner {
+  max-width: 660px;
+  margin-inline: auto;
+}
+
+.storyMark {
+  width: 112px;
+  margin: 0 auto 18px;
+}
+
+.storyHeading {
+  font-size: clamp(23px, 2.8vw, 34px);
+}
+
+.storyLede {
+  margin-inline: auto;
+}
+
+.storyLink {
+  display: inline-block;
+  margin-top: 8px;
+  font-family: var(--vj-body);
+  font-size: 11px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--lamp);
+  text-decoration: none;
+  border-bottom: 1px solid currentColor;
+  padding-bottom: 3px;
+}
+
+.easel {
+  margin: clamp(38px, 5vw, 64px) 0 0;
+}
+
+.easel img {
+  width: 100%;
+  height: auto;
+  display: block;
+  filter: var(--imgfx);
+}
+
+.easelCaption {
+  margin-top: 12px;
+  font-family: var(--vj-body);
+  font-size: 9.5px;
+  letter-spacing: 0.26em;
+  text-transform: uppercase;
+  color: var(--shell);
+}
+
+/* ---------- footer ---------- */
+
+.footer {
+  padding: clamp(56px, 7vw, 96px) clamp(24px, 6vw, 90px) clamp(70px, 8vw, 110px);
+  border-top: 1px solid var(--line);
+}
+
+.footerGrid {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr 1fr;
+  gap: clamp(28px, 4vw, 60px);
+}
+
+.footerMaster {
+  display: block;
+  font-family: var(--vj-display);
+  font-size: clamp(22px, 2.4vw, 30px);
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: var(--bone);
+}
+
+.footerVenue {
+  display: block;
+  margin-top: 8px;
+  font-family: var(--vj-body);
+  font-size: 10.5px;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--lamp);
+}
+
+.footerLine {
+  font-size: 14px;
+  margin-bottom: 22px;
+  max-width: none;
+}
+
+.footerLink {
+  color: var(--body);
+  text-decoration: none;
+  border-bottom: 1px solid var(--line);
+}
+
+.footerLink:hover {
+  color: var(--lamp);
+}
+
+.venueList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  font-size: 14px;
+  color: var(--body);
+}
+
+@media (max-width: 860px) {
+  .footerGrid {
+    grid-template-columns: 1fr;
+  }
+}

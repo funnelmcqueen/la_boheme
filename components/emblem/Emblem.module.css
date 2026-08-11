@@ -1,0 +1,232 @@
+/**
+ * The emblem holds white at every depth. --emblem is a fixed token, not a ramp,
+ * and this is the only place on the page that is allowed to ignore the descent.
+ */
+.emblem {
+  position: relative;
+  color: var(--emblem);
+  z-index: 2;
+}
+
+.full {
+  width: min(94%, 486px);
+  margin: 0 auto 40px;
+}
+
+.mark {
+  width: 92px;
+}
+
+/**
+ * The dome is the top half of the rosette. padding-top:50% makes the box exactly
+ * half as tall as it is wide, and overflow:hidden cuts the rosette on its own
+ * centre line — which is the line the wordmark then sits on.
+ *
+ * The outermost ring must stay at or inside 0.454 of the viewBox or this cut
+ * shaves the crown. See OUTERMOST in lib/mandala.ts; a test holds it.
+ */
+.dome {
+  position: relative;
+  width: 100%;
+  padding-top: 50%;
+  overflow: hidden;
+}
+
+.dial {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+}
+
+.dial svg {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+/**
+ * Non-harmonic periods with alternating directions, so the figure never visibly
+ * repeats. Durations are set per-instance in Emblem.tsx rather than by
+ * :nth-of-type — the mockup's version depends on the frame staying the last
+ * sibling, which is exactly the kind of quiet coupling that breaks on a reorder.
+ */
+.ring {
+  transform-origin: 50% 50%;
+  transform-box: view-box;
+  animation: vj-turn linear infinite;
+}
+
+@keyframes vj-turn {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.mark .frame {
+  opacity: 0.8;
+}
+
+/**
+ * The vajana, floating clear of the cut line and never touching the innermost
+ * ring. At 24% of the dome its far corner sits at 0.181 of the viewBox against a
+ * clear radius of 0.194 — geometry.test.ts recomputes that, because the lip, the
+ * hollow and the fish all move it.
+ */
+.core {
+  position: absolute;
+  left: 50%;
+  bottom: 6%;
+  width: 24%;
+  transform: translateX(-50%);
+  animation: vj-hover 16s ease-in-out infinite;
+}
+
+.mark .core {
+  bottom: 7%;
+  width: 26%;
+}
+
+.core svg {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+/* The mark carries the mark's colour. The rings stay white. */
+.core use {
+  stroke: var(--logo);
+  stroke-width: 1.35;
+  fill: none;
+}
+
+.mark .core use {
+  stroke-width: 1.1;
+}
+
+@keyframes vj-hover {
+  0% {
+    transform: translateX(-50%) translateY(0) rotate(-1.8deg);
+  }
+  25% {
+    transform: translateX(-51.5%) translateY(-2px) rotate(0.5deg);
+  }
+  50% {
+    transform: translateX(-50%) translateY(2px) rotate(1.8deg);
+  }
+  75% {
+    transform: translateX(-48.5%) translateY(-1px) rotate(0.3deg);
+  }
+  100% {
+    transform: translateX(-50%) translateY(0) rotate(-1.8deg);
+  }
+}
+
+/* The baseline the wordmark sits on, and the rosette's own centre line. */
+.base {
+  height: 1px;
+  background: currentColor;
+  position: relative;
+}
+
+.mark .base {
+  opacity: 0.8;
+  margin-top: 2px;
+}
+
+.full .base::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: -3px;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--acc);
+  transform: translateX(-50%);
+}
+
+.name {
+  text-align: center;
+  padding-top: 24px;
+  /* It may be an h1; it must not inherit heading margins or sizing. */
+  margin: 0;
+  font-size: inherit;
+}
+
+/* text-indent compensates for the trailing letter-space, which would otherwise
+   push the whole word left of the centre line the dome establishes. */
+.vaj {
+  display: block;
+  font-family: var(--vj-display);
+  font-weight: 400;
+  font-size: clamp(30px, 3vw, 52px);
+  letter-spacing: 0.3em;
+  text-indent: 0.3em;
+  text-transform: uppercase;
+  color: var(--emblem);
+  line-height: 1;
+}
+
+.lb {
+  display: block;
+  margin-top: 8px;
+  font-family: var(--vj-body);
+  font-weight: 500;
+  font-size: 13px;
+  letter-spacing: 0.34em;
+  text-indent: 0.34em;
+  text-transform: uppercase;
+  color: var(--logo);
+}
+
+/**
+ * Short viewports: the emblem is the first thing to give, so the CTA stays up.
+ *
+ * The mockup fires this at 780px, which misses 1280×800 — one of the four
+ * viewports the CTA has to clear — by twenty pixels. That was survivable while the
+ * CTA sat exactly on the fold; with 40px of clearance it is not, and 800-high
+ * screens come up 24px short. 860px covers them and leaves 900-high screens on the
+ * full 486px mark.
+ */
+@media (max-height: 860px) {
+  .full {
+    width: min(88%, 386px);
+    margin-bottom: 26px;
+  }
+
+  .full .name {
+    padding-top: 18px;
+  }
+}
+
+/* 1280×800 needs another 30px out of the column. */
+@media (max-height: 820px) {
+  .full {
+    width: min(84%, 344px);
+  }
+
+  .full .name {
+    padding-top: 14px;
+  }
+}
+
+/* Narrow phones. The emblem gives up size before the type does, here too. */
+@media (max-width: 430px) {
+  .full {
+    width: min(68%, 244px);
+    margin-bottom: 12px;
+  }
+
+  .full .name {
+    padding-top: 12px;
+  }
+}
+
+/* The rings and the drift stop. The descent does not — see DepthEngine. */
+@media (prefers-reduced-motion: reduce) {
+  .ring,
+  .core {
+    animation: none;
+  }
+}

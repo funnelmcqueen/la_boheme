@@ -1,0 +1,129 @@
+/**
+ * Section rhythm and the separators.
+ *
+ * This layer is global on purpose. Everything else is a CSS Module, but these are
+ * sibling selectors — a section is styled by what follows it — and modules cannot
+ * reach across component boundaries. Global means prefixed: every class here
+ * carries `vj-`.
+ */
+
+/**
+ * Only the page's own sections. `section` on its own also matched every nested one
+ * — the carte groups each carry an aria-labelledby section, and each was picking
+ * up 150px of page padding, adding nearly a thousand pixels of blank cream to the
+ * middle of the menu.
+ */
+main > section {
+  padding: clamp(80px, 11vw, 150px) clamp(24px, 6vw, 90px);
+}
+
+.vj-column {
+  max-width: 1180px;
+  margin-inline: auto;
+}
+
+/**
+ * A separator belongs to neither side, so it is its own block carrying the whole
+ * gap: a flat 50px above and below at every viewport, the one measurement on the
+ * page that does not scale. The sections either side give up their adjacent
+ * padding, or the next section's clamp() top padding stacks underneath and the
+ * mark ends up against the section above and floating far from the one below.
+ */
+.vj-sep,
+.vj-chapter {
+  padding-block: 50px;
+  padding-inline: clamp(24px, 6vw, 90px);
+}
+
+/* `footer` is in this list because the last separator on the page is followed by
+   one, not by a section — without it the final gap measures 50 above and 120
+   below while the other two are honest. */
+main > .vj-sep + section,
+main > .vj-chapter + section,
+.vj-sep + footer,
+.vj-chapter + footer {
+  padding-top: 0;
+}
+
+/* The hero is excluded: ruling is that it keeps clearance under its CTA and the
+   asymmetry under the hero divider is accepted. See .vj-hero below. */
+main > section:not(.vj-hero):has(+ .vj-sep),
+main > section:not(.vj-hero):has(+ .vj-chapter),
+footer:has(+ .vj-sep),
+footer:has(+ .vj-chapter) {
+  padding-bottom: 0;
+}
+
+/**
+ * Measure the gap to the topmost element of the next section, not to the section
+ * box. A split grid defaults to align-items:center, so its shorter column floats
+ * and the air under the separator silently stops matching the air above it.
+ */
+main > .vj-sep + section .vj-split,
+main > .vj-chapter + section .vj-split {
+  align-items: start;
+}
+
+/**
+ * The hero keeps 40px clear below its CTA. Driving it to 0 to make the hero
+ * divider measure 50/50 put the button's bottom edge exactly on the fold at every
+ * desktop size, where a collapsing URL bar clips it outright. A CTA at the fold is
+ * worse than an uneven divider.
+ */
+.vj-hero {
+  padding-bottom: 40px;
+}
+
+/**
+ * On mobile the call bar occupies the bottom of the screen, so 40px of padding
+ * would put the button under it. The clearance is the same 40px — it is measured
+ * to the top of the bar rather than to the bottom of the viewport.
+ */
+@media (max-width: 820px) {
+  /* Default for the no-JS case only. CallBar measures itself and overwrites this
+     on <html>, because the real height moves with the translated labels, whether
+     the buttons wrap, and the device's safe-area inset. */
+  :root {
+    --vj-callbar-h: 89px;
+  }
+
+  .vj-hero {
+    padding-bottom: calc(40px + var(--vj-callbar-h));
+  }
+}
+
+/**
+ * Patterned rules tile away from the centre so both sides meet the mark at the
+ * same point in the motif. Tiling from the outside leaves each side ending
+ * mid-tile at a different place, which is what makes a perfectly centred divider
+ * look off.
+ *
+ * Grid, not flex: `1fr auto 1fr` puts the mark on the centre line. Two flex:1
+ * rules do not, because the rules' intrinsic content biases the distribution.
+ */
+.vj-sep__inner,
+.vj-chapter__inner {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: clamp(18px, 3vw, 44px);
+  max-width: 1180px;
+  margin-inline: auto;
+}
+
+.vj-sep__rule,
+.vj-chapter__rule {
+  height: 1px;
+  background: var(--lamp);
+  opacity: 0.5;
+}
+
+.vj-sep__rule:first-child,
+.vj-chapter__rule:first-child {
+  background-position: right;
+}
+
+.vj-sep__rule:last-child,
+.vj-chapter__rule:last-child {
+  background-position: left;
+}

@@ -1,0 +1,27 @@
+/* Measuring posts, not page elements. Zero width so they can never affect layout,
+   anchored to the top of the document. */
+.sentinels {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 0;
+  pointer-events: none;
+}
+
+.top {
+  position: absolute;
+  top: 0;
+  height: 1px;
+  width: 0;
+  display: block;
+}
+
+/* The status bar fades in past here. A depth reading of 0 m on the first screen
+   says nothing, so the bar stays out of the way until the descent has begun. */
+.fold {
+  position: absolute;
+  top: 0;
+  height: 55svh;
+  width: 0;
+  display: block;
+}
