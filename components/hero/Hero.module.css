@@ -264,9 +264,30 @@
   transition: none;
 }
 
+/**
+ * The mark travels home slowly, and the curve is the whole point.
+ *
+ * This used to be cubic-bezier(0.16, 1, 0.3, 1) — an expo ease-out that covers
+ * about four fifths of the distance in the first third of the time. Against a
+ * 2.3s hold that read as a snap followed by a crawl, which is the opposite of
+ * arriving. The curve below eases in gently, spends its length in the middle of
+ * the journey and settles without a stop, and the hold in front of it is short
+ * enough that the mark is moving almost as soon as it is seen.
+ *
+ * The smoothness is the curve far more than the length. At 1.35s of expo-out the
+ * mark was already home before the eye had followed it; at 1.2s of this one it is
+ * still moving the whole way.
+ *
+ * 1.2s and not longer because of BUILD-BRIEF §6's 2.5s, which is the budget for
+ * the whole entrance — see scripts/checks/entrance.mjs, which used to time only
+ * the pause in front of it and passed at 2.3s while the entrance itself ran 3.65s.
+ * Measured end to end on a loaded machine this lands at 2.2–2.4s, of which some
+ * 650ms is frames blocked by hydration rather than anything set here. If §6's 2.5s
+ * ever moves, this is the value to spend it on: the travel wants to be 1.7s.
+ */
 :global(html[data-entrance="done"]) .emblem {
   transform: none;
-  transition: transform 1.35s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: transform 1.2s cubic-bezier(0.42, 0, 0.15, 1);
 }
 
 :global(html[data-entrance="running"]) .text > :not(.emblem) {
@@ -278,20 +299,22 @@
   opacity: 0;
 }
 
+/* Behind the mark and inside its travel, so the column is already there when the
+   emblem arrives rather than appearing after it has stopped. */
 :global(html[data-entrance="done"]) .text > :not(.emblem) {
   opacity: 1;
   transform: none;
-  transition: opacity 1s ease, transform 1s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: opacity 0.95s ease, transform 0.95s cubic-bezier(0.42, 0, 0.15, 1);
 }
 
-:global(html[data-entrance="done"]) .headline { transition-delay: 0.13s; }
-:global(html[data-entrance="done"]) .rule { transition-delay: 0.22s; }
-:global(html[data-entrance="done"]) .lede { transition-delay: 0.3s; }
-:global(html[data-entrance="done"]) .buttons { transition-delay: 0.38s; }
+:global(html[data-entrance="done"]) .headline { transition-delay: 0.3s; }
+:global(html[data-entrance="done"]) .rule { transition-delay: 0.42s; }
+:global(html[data-entrance="done"]) .lede { transition-delay: 0.54s; }
+:global(html[data-entrance="done"]) .buttons { transition-delay: 0.66s; }
 
 :global(html[data-entrance="done"]) .panel {
   opacity: 1;
-  transition: opacity 1.2s ease 0.35s;
+  transition: opacity 1.2s ease 0.45s;
 }
 
 @media (prefers-reduced-motion: reduce) {

@@ -12,17 +12,46 @@
  */
 import { baseUrl, reporter, wait, withBrowser } from "./harness.mjs";
 
-/** Installed before any page script, and polls on rAF so it cannot miss a state. */
+/**
+ * Installed before any page script, and polls on rAF so it cannot miss a state.
+ *
+ * It watches two things, because `data-entrance="done"` is not the end of the
+ * entrance — it is the moment the mark *starts* travelling home. Timing to the
+ * flag measured the pause and reported 2.3s while the whole thing ran 3.65s, so
+ * the 2.5s rule was being met on a technicality. What matters is when the emblem
+ * comes to rest, which is when its transform reaches identity and stays there.
+ */
 const POLL = () => {
   window.__entranceLog = [];
+  window.__settledAt = null;
   let last = "(none)";
+  let running = false;
+  let lastTransform = null;
+  let stableSince = null;
+
   const tick = () => {
     const root = document.documentElement;
     const value = root?.dataset ? root.dataset.entrance || "(unset)" : "(no html)";
     if (value !== last) {
       last = value;
+      if (value === "running") running = true;
       window.__entranceLog.push({ at: Math.round(performance.now()), value });
     }
+
+    if (running && window.__settledAt === null) {
+      const mark = document.querySelector('[data-vj-emblem="full"]');
+      if (mark) {
+        const now = getComputedStyle(mark).transform;
+        if (now !== lastTransform) {
+          lastTransform = now;
+          stableSince = performance.now();
+        } else if (now === "none" && performance.now() - stableSince > 150) {
+          // At rest the rule is `transform: none`; mid-travel it is a matrix.
+          window.__settledAt = Math.round(stableSince);
+        }
+      }
+    }
+
     requestAnimationFrame(tick);
   };
   requestAnimationFrame(tick);
@@ -46,15 +75,21 @@ async function run(browser, { label, hash = "", reduced = false, twice = false }
   await page.goto(`${baseUrl()}/vajana${hash}`, { waitUntil: "networkidle0", timeout: 120_000 });
   await wait(3800);
 
-  const log = await page.evaluate(() => window.__entranceLog);
+  const { log, settledAt } = await page.evaluate(() => ({
+    log: window.__entranceLog,
+    settledAt: window.__settledAt,
+  }));
   await context.close();
 
   const started = log.find((l) => l.value === "running");
-  const landed = log.find((l) => l.value === "done");
+  const released = log.find((l) => l.value === "done");
   return {
     label,
     ran: Boolean(started),
-    duration: started && landed ? landed.at - started.at : null,
+    /** The pause before the mark moves. */
+    hold: started && released ? released.at - started.at : null,
+    /** The whole entrance: from the mark appearing to the mark at rest. */
+    duration: started && settledAt !== null ? settledAt - started.at : null,
     final: log.at(-1)?.value,
   };
 }
@@ -63,12 +98,14 @@ await withBrowser(async (browser) => {
   const report = reporter("Entrance");
 
   const fresh = await run(browser, { label: "fresh session" });
-  report.check("runs once on a fresh session", fresh.ran, fresh.duration ? `${fresh.duration}ms` : "never ran");
+  report.check("runs once on a fresh session", fresh.ran, fresh.ran ? "" : "never ran");
+  // BUILD-BRIEF §6's budget is the whole entrance, not the pause in front of it.
   report.check(
-    "stays under 2.5s",
+    "stays under 2.5s, mark appearing to mark at rest",
     fresh.duration !== null && fresh.duration < 2500,
-    `${fresh.duration}ms`,
+    fresh.duration === null ? "never settled" : `${fresh.duration}ms`,
   );
+  report.note("  of which the hold before it moves", `${fresh.hold}ms`);
 
   for (const condition of [
     { label: "second load in the same session", twice: true },

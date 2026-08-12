@@ -30,10 +30,21 @@ try{
   r.style.setProperty('--vj-ent-dy',(window.innerHeight/2-cy).toFixed(1)+'px');
   sessionStorage.setItem('vj-entrance','seen');
   r.dataset.entrance='running';
-  /* The clock starts here, at paint, not at hydration. Started from React it
-     would be 2.3s *after* the bundle arrives, which on a phone on 4G is well past
-     the 2.5s the whole thing is allowed — and the person it would be keeping
-     waiting is the one at the table trying to read the menu. */
-  setTimeout(function(){r.dataset.entrance='done'},2300);
+  /* Two frames, not a timer.
+     
+     This was setTimeout(2300), and the number was never the duration it looked
+     like: it is scheduled on the main thread at exactly the moment hydration is
+     using it, so it fires late by however busy the page is. Measured on a loaded
+     machine, a nominal 300ms fired at 751, 844 and 1257ms across three runs — the
+     slip was larger than the value. On a phone on 4G, which is the case §6 is
+     written for, it is larger still.
+
+     requestAnimationFrame twice instead: the first frame paints the mark at the
+     centre, the second releases it. The hold is then one frame rather than a
+     promise the platform cannot keep, and the entrance's length is the travel —
+     which is a CSS transition on the compositor and does hold its duration. */
+  requestAnimationFrame(function(){requestAnimationFrame(function(){
+    r.dataset.entrance='done';
+  })});
 }catch(err){r.dataset.entrance='done'}
 })()`;
