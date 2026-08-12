@@ -11,8 +11,9 @@ every ruling that overrides it.
 
 ## Where it stands
 
-All six slices are built. The site runs, `npm test` is 52 green, `npm run
-typecheck` and `npm run build` are clean, and all four routes prerender static.
+All six slices are built. The site runs on Next 15.5.7, `npm test` is 52 green,
+`npm run check` is five browser checks green, `npm run typecheck` and `npm run
+build` are clean, and all four routes prerender static.
 It is pushed to `funnelmcqueen/la_boheme` on `main`. **It is not deployed
 anywhere** — that push is the whole of the deployment so far.
 
@@ -203,26 +204,45 @@ sweep of `shortestArc` over every angle pair, which is what caught the >540° bu
 `content/menu.ts`, by walking every `.ts`/`.tsx`/`.css` file for the shapes a price
 takes. Includes a guard-the-guard case, so it cannot pass by finding no files.
 
-### The acceptance checks that are not in `npm test`
+### The browser checks
 
-The seascape's real acceptance test needs a running server and thirty to sixty
-seconds of live motion, so it was run ad hoc rather than committed. It matters, and
-it is worth rebuilding if you touch the physics. It drives headless Chrome against
-`/vajana`, reads `window.__vjSea` — which `Seascape.tsx` exposes for exactly this —
-and samples every 250ms:
+`npm test` cannot cover everything: two of these need a running server and thirty to
+sixty seconds of live motion, because both failures they catch are invisible in a
+single frame. They live in `scripts/checks/` and each exits non-zero on failure.
 
-- **population** over sixty seconds in ten-second windows. The failure it catches is
-  slow: with a wrapping plane, once the wave force reached everything they left
-  together and ten visible fell to five inside twenty seconds. A single frame shows
-  nothing. Expect a flat 11.
-- **closest approach to the emblem**, in ellipse units, where 1.0 is the exclusion
-  surface. Expect everything above 1.7.
-- **clamp firings**, as a delta. The hard clamp is a safety net; expect 0.
-- **overlap of creature boxes with the wordmark and the dome**, as rectangle
-  intersections. Expect 0 and 0.
+```bash
+npm run dev                 # one terminal
+npm run check               # all five
+npm run check:seascape      # or one at a time
+```
 
-Same for the entrance: poll `document.documentElement.dataset.entrance` from
-document creation via `evaluateOnNewDocument`, not after `load` — it completes in
-~2.3s and a probe that starts at `load` misses it entirely and reports it never ran.
-Verify it runs once on a fresh session, and skips on a second load, on a hash deep
-link, and under `prefers-reduced-motion`.
+`CHROME_PATH` overrides Chrome resolution; `VAJANA_URL` or `--url=` overrides the
+base URL, which defaults to port 3000.
+
+- **`page.mjs`** — the descent runs surface to deep and bottoms out at 54 m, both
+  interior separators measure 50/50 between visible edges, one JSON-LD graph, alt
+  text everywhere, no page errors, emblems off the sprite. Reports each section's
+  depth band against §9 without gating on it.
+- **`viewports.mjs`** — the CTA clears the fold by 40px at all four required
+  desktop sizes and the hero is one screen at each; on phones it clears the call
+  bar and drops its duplicate WhatsApp button.
+- **`seo.mjs`** — both locales: `lang`, one `h1` carrying *Vajana by La Bohème*,
+  canonical, hreflang, a schema graph whose `parentOrganization` and `hasMenu`
+  resolve, offers carrying their unit, and that "Vajana" never appears alone. Then
+  the floor: 360px, heading order, skip link, visible focus.
+- **`entrance.mjs`** — runs once and lands under 2.5s; skipped on a second load, a
+  hash deep link, and reduced motion.
+- **`seascape.mjs`** — population across six ten-second windows, closest approach
+  per species, clamp firings, and whether anything settles on the wordmark. Checks
+  the keep-out is where the dome is before reading anything else.
+
+`scripts/checks/README.md` lists the five mistakes that produced wrong numbers
+during the build — the cumulative clamp counter, measuring against a placeholder,
+polling the entrance after `load`, `scroll-behavior: smooth`, and running for
+thirty seconds instead of sixty. Read it before writing anything new alongside them.
+
+One thing the checks deliberately allow: a creature briefly crossing the wordmark.
+The keep-out is the dome, not the lockup, because type on a solid baseline tolerates
+a fish passing behind it and an ellipse over the whole mark left the water no middle.
+The check fails only if something *settles* there. Currently ~5 crossings in ~2,500
+creature-samples, longest 1.0s, all octopus.

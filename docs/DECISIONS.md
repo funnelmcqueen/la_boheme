@@ -321,3 +321,15 @@ The descent itself is intact — 0 to 54m over one scroll, all three separators
 Verërat and Mbrëmje now sit in water several metres darker than the frames were
 chosen for. Worth a decision: either the table is descriptive of the mockup's
 shorter menu and this is fine, or the order needs rebalancing.
+
+### A brief crossing of the wordmark is accepted
+
+Scoping the keep-out to the dome means creatures can pass behind the VAJANA
+lettering. That is the point — type on a solid baseline tolerates it and the
+rosette does not — so `scripts/checks/seascape.mjs` does not fail on a crossing. It
+fails if something *settles* there, defined as more than two seconds continuous.
+
+Only visible at sixty seconds; thirty-second runs reported zero. Currently ~5
+crossings in ~2,500 creature-samples, longest 1.0s, all octopus. If that ever
+becomes a fish parked on the N, the fix is a small exclusion around the label
+alone, not one ellipse over everything.

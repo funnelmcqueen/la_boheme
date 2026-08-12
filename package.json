@@ -8,10 +8,16 @@
     "start": "next start",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
-    "test": "vitest run"
+    "test": "vitest run",
+    "check": "node scripts/checks/page.mjs && node scripts/checks/viewports.mjs && node scripts/checks/seo.mjs && node scripts/checks/entrance.mjs && node scripts/checks/seascape.mjs",
+    "check:page": "node scripts/checks/page.mjs",
+    "check:seascape": "node scripts/checks/seascape.mjs",
+    "check:entrance": "node scripts/checks/entrance.mjs",
+    "check:viewports": "node scripts/checks/viewports.mjs",
+    "check:seo": "node scripts/checks/seo.mjs"
   },
   "dependencies": {
-    "next": "15.5.4",
+    "next": "15.5.7",
     "react": "19.1.1",
     "react-dom": "19.1.1"
   },
