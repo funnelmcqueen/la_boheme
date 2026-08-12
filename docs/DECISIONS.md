@@ -9,18 +9,32 @@ Rulings that override the two spec documents. Read this before BUILD-BRIEF.md.
   (`--ink-verm` …) all belong to the design §9 replaced. None of them survive in
   the approved mockup. Type (Bodoni Moda / Archivo) is still live — it is
   restated in CLAUDE-CODE-PROMPT.md.
+- **§6's "Fires once per session (`sessionStorage`)"** — overruled by the owner.
+  The entrance plays on every load, reloads included. It is the masthead arriving,
+  and the owner wants it to arrive every time rather than once.
+
+  It also made the entrance nearly impossible to work on: the first load consumed
+  the flag and every reload after it skipped the thing under test, which is why the
+  entrance looked broken to everyone who tried to look at it — including, for a
+  while, to me. `scripts/checks/entrance.mjs` now asserts that a reload *does* run
+  it, so the flag cannot quietly come back.
+
+  Reduced motion and hash deep links still skip it. One is an accessibility
+  preference; the other is someone who asked for a specific part of the page and
+  should not be held at the top of it.
+
 - **§6's "Total under 2.5s"** — overruled by the owner. The entrance is a grand
-  opening: the emblem holds at the centre of the screen for two seconds, alive —
+  opening: the emblem holds at the centre of the screen for three seconds, alive —
   rings turning, the vajana drifting in its hollow, because it *is* the hero's own
-  emblem and nothing freezes it — and then drifts home over two more. Four seconds
-  nominal, 3.7–4.8s measured depending on machine load.
+  emblem and nothing freezes it — and then drifts home over two more. Five seconds
+  nominal, 5.2–5.6s measured.
 
   What made the 2.5s safe still holds, and is the reason this is affordable: the
   page is complete and readable underneath from first paint, the entrance is an
   overlay and never a gate, it runs once per session, it is skipped for reduced
   motion and for hash deep links, and a tap, click, scroll or Escape ends it
   immediately. Nobody on 4G waits for it; they scroll and it is gone.
-  `scripts/checks/entrance.mjs` now guards 5.5s, and guards it over the whole
+  `scripts/checks/entrance.mjs` now guards 6.5s, and guards it over the whole
   entrance rather than the pause in front of it.
 
 - **§7 Page order** — dead. The live order is the one in CLAUDE-CODE-PROMPT.md:

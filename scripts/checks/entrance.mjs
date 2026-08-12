@@ -1,14 +1,16 @@
 /**
- * The entrance, across all four conditions.
+ * The entrance, across every condition it has.
  *
  *   node scripts/checks/entrance.mjs
  *
- * The trap: poll from document creation, not after `load`. The whole thing lasts
- * about 2.3 seconds, and on a cold dev server `load` fires after it has finished —
- * a probe that starts there reports the entrance never ran, three times in a row,
- * convincingly.
+ * The trap: poll from document creation, not after `load`. The whole thing runs
+ * about five seconds, and a probe that starts at `load` can miss the beginning of
+ * it — an earlier version reported the entrance never running, three times in a
+ * row, convincingly.
  *
- * Each condition gets its own browser context so sessionStorage is genuinely fresh.
+ * Each condition gets its own browser context, which used to matter because the
+ * entrance was once per session. It no longer is; the isolation stays because a
+ * shared context also shares the HTTP cache and the timings drift.
  */
 import { baseUrl, reporter, wait, withBrowser } from "./harness.mjs";
 
@@ -101,25 +103,35 @@ await withBrowser(async (browser) => {
   report.check("runs once on a fresh session", fresh.ran, fresh.ran ? "" : "never ran");
   /**
    * BUILD-BRIEF §6 said 2.5s for the whole entrance. Overruled by the owner: the
-   * mark now holds for two seconds, alive, and drifts home over two more. See
+   * mark now holds for three seconds, alive, and drifts home over two more. See
    * DECISIONS.
    *
-   * 5.5s against a 4s nominal, because the measured figure is not the nominal one.
-   * The hold is a setTimeout competing with hydration and lands at 2.3–2.45s, and
-   * the drift's 2s stretches to about 2.3 as frames are dropped — 4.6–4.8s end to
-   * end on a loaded machine. The budget is set to catch a runaway, not to fail on
-   * machine load, and it is measured over the right span: from the mark appearing
-   * to the mark at rest, rather than over the pause in front of it.
+   * 6.5s against a 5s nominal, because the measured figure is not the nominal one:
+   * the drift's 2s stretches as frames are dropped under hydration. The budget is
+   * set to catch a runaway, not to fail on machine load, and it is measured over
+   * the right span — from the mark appearing to the mark at rest, rather than over
+   * the pause in front of it.
    */
   report.check(
-    "stays under 5.5s, mark appearing to mark at rest",
-    fresh.duration !== null && fresh.duration < 5500,
+    "stays under 6.5s, mark appearing to mark at rest",
+    fresh.duration !== null && fresh.duration < 6500,
     fresh.duration === null ? "never settled" : `${fresh.duration}ms`,
   );
   report.note("  of which the hold before it drifts", `${fresh.hold}ms`);
 
+  /**
+   * It plays on every load now, reloads included — §6's "once per session" is
+   * overruled. This check used to assert the opposite, so it is the one that would
+   * have caught the regression if the flag ever came back.
+   */
+  const again = await run(browser, { label: "reload", twice: true });
+  report.check(
+    "runs again on a reload in the same session",
+    again.ran,
+    again.duration === null ? "never settled" : `${again.duration}ms`,
+  );
+
   for (const condition of [
-    { label: "second load in the same session", twice: true },
     { label: "hash deep link", hash: "#menuja" },
     { label: "prefers-reduced-motion", reduced: true },
   ]) {
