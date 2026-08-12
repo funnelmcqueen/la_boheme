@@ -1,69 +1,80 @@
-import Image from "next/image";
-import styles from "./page.module.css";
+"use client";
+
+import { useState } from "react";
+
+type Copy = {
+  headline: string;
+  subheadline: string;
+  bullets: string[];
+  cta: string;
+};
 
 export default function Home() {
+  const [trade, setTrade] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [copy, setCopy] = useState<Copy | null>(null);
+
+  async function generate() {
+    const value = trade.trim();
+    if (!value) return;
+    setLoading(true);
+    setError("");
+    setCopy(null);
+    try {
+      const res = await fetch("/api/generate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ trade: value }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Request failed");
+      setCopy(data.copy);
+    } catch (e) {
+      setError((e as Error).message);
+    } finally {
+      setLoading(false);
+    }
+  }
+
   return (
-    <div className={styles.page}>
-      <main className={styles.main}>
-        <Image
-          className={styles.logo}
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
+    <main className="wrap">
+      <header className="head">
+        <h1>Funnel Copy Generator</h1>
+        <p>Type a trade and get ready-to-use landing-page copy in seconds.</p>
+      </header>
+
+      <div className="bar">
+        <input
+          value={trade}
+          onChange={(e) => setTrade(e.target.value)}
+          onKeyDown={(e) => e.key === "Enter" && generate()}
+          placeholder="e.g. roofer, plumber, landscaper…"
+          aria-label="Trade"
         />
-        <div className={styles.intro}>
-          <h1>
-            To get started, edit the{" "}
-            <code className={styles.code}>page.tsx</code> file.
-          </h1>
-          <p>
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className={styles.ctas}>
-          <a
-            className={styles.primary}
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className={styles.logo}
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={14}
-            />
-            Deploy Now
-          </a>
-          <a
-            className={styles.secondary}
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
-    </div>
+        <button onClick={generate} disabled={loading || !trade.trim()}>
+          {loading ? "Writing…" : "Generate"}
+        </button>
+      </div>
+
+      {error && <div className="error">⚠️ {error}</div>}
+
+      {copy && (
+        <section className="card">
+          <h2>{copy.headline}</h2>
+          <p className="sub">{copy.subheadline}</p>
+          <ul>
+            {copy.bullets?.map((b, i) => (
+              <li key={i}>{b}</li>
+            ))}
+          </ul>
+          <button className="cta">{copy.cta}</button>
+        </section>
+      )}
+
+      {!copy && !error && !loading && (
+        <p className="hint">Your generated copy will appear here.</p>
+      )}
+    </main>
   );
 }
