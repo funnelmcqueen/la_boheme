@@ -1,6 +1,6 @@
 /**
- * Sections paint no background of their own. body, the story and the footer are
- * all transparent over the ground; only the carte keeps a fill.
+ * Sections paint no background of their own. body and the footer are transparent
+ * over the ground; only the carte keeps a fill.
  *
  * Photographs carry --imgfx, the depth-driven filter, so they lose saturation and
  * warmth the way they would underwater.
@@ -286,94 +286,6 @@
   .track {
     animation: none;
   }
-}
-
-/* ---------- evenings ---------- */
-
-.evening {
-  position: relative;
-  overflow: hidden;
-  padding-block: clamp(120px, 16vw, 220px);
-}
-
-.eveningPhoto {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  z-index: -1;
-  /* The frame is a dusk-graded daylight shot standing in for a night table — see
-     the blocked list. Darkened here so the section reads at its depth. */
-  filter: var(--imgfx) brightness(0.52) saturate(0.8);
-}
-
-.eveningText {
-  position: relative;
-}
-
-.buttons {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12px;
-  margin-top: 26px;
-}
-
-/* ---------- the story ---------- */
-
-.story {
-  text-align: center;
-}
-
-.storyInner {
-  max-width: 660px;
-  margin-inline: auto;
-}
-
-.storyMark {
-  width: 112px;
-  margin: 0 auto 18px;
-}
-
-.storyHeading {
-  font-size: clamp(23px, 2.8vw, 34px);
-}
-
-.storyLede {
-  margin-inline: auto;
-}
-
-.storyLink {
-  display: inline-block;
-  margin-top: 8px;
-  font-family: var(--vj-body);
-  font-size: 11px;
-  letter-spacing: 0.22em;
-  text-transform: uppercase;
-  color: var(--lamp);
-  text-decoration: none;
-  border-bottom: 1px solid currentColor;
-  padding-bottom: 3px;
-}
-
-.easel {
-  margin: clamp(38px, 5vw, 64px) 0 0;
-}
-
-.easel img {
-  width: 100%;
-  height: auto;
-  display: block;
-  filter: var(--imgfx);
-}
-
-.easelCaption {
-  margin-top: 12px;
-  font-family: var(--vj-body);
-  font-size: 9.5px;
-  letter-spacing: 0.26em;
-  text-transform: uppercase;
-  color: var(--shell);
 }
 
 /* ---------- footer ---------- */

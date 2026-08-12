@@ -2,12 +2,15 @@ import type { Copy } from "@/content/copy/types";
 import type { Venue } from "@/content/venues";
 
 /**
- * The two conversions. Both offline: call, and WhatsApp. No booking engine.
+ * The conversions. Both offline: call, and WhatsApp. No booking engine.
  *
- * Every button offers both, and the WhatsApp prefill differs by intent so the
- * owner reads date, headcount and occasion before he replies.
+ * BUILD-BRIEF §8 specifies two intents — a table, and an evening — with a
+ * different WhatsApp prefill each. Only "table" is reachable now: the evening
+ * intent's one entry point was the Mbrëmje section, which has been removed, and
+ * its copy went with it. Restoring that section means restoring `cta.evening`
+ * and `prefill.evening` alongside it, and widening this back.
  */
-export type Intent = "table" | "evening";
+export type Intent = "table";
 
 export const telHref = (venue: Venue) => `tel:${venue.phone}`;
 

@@ -1,6 +1,6 @@
 import { Carte } from "@/components/sections/Carte";
 import {
-  Atmosfera, Footer, Kuzhina, Mbremje, Peshku, Signatures, Story, Vererat,
+  Atmosfera, Footer, Kuzhina, Peshku, Signatures, Vererat,
 } from "@/components/sections/Sections";
 import { Chapter, Fleuron } from "@/components/sections/Separator";
 import { Hero } from "@/components/hero/Hero";
@@ -45,8 +45,6 @@ export function VenuePage({
       <Carte copy={copy} />
       <Peshku copy={copy} venue={venue} />
       <Vererat copy={copy} venue={venue} />
-      <Mbremje copy={copy} venue={venue} />
-      <Story copy={copy} venue={venue} />
       <Fleuron />
       <Footer copy={copy} venue={venue} venues={venues} />
     </>

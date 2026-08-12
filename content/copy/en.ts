@@ -8,7 +8,6 @@ export const en: Copy = {
     { href: "#peshku", label: "The catch" },
     { href: "#vererat", label: "Wines" },
     { href: "#kuzhina", label: "Kitchen" },
-    { href: "#mbremje", label: "Evenings" },
     { href: "/en/vajana/la-boheme", label: "La Bohème" },
   ],
 
@@ -86,18 +85,8 @@ export const en: Copy = {
     housesNote: "Eight houses. Names, not logos — see the note in the documentation.",
   },
 
-  evenings: {
-    eyebrow: "Evenings and celebrations",
-    heading: "Long tables by the water",
-    body: "Birthdays, small weddings, work dinners, nights with friends. Music, and the kitchen at your disposal.",
-    answer: "Send us the date and the number of people. We answer the same day.",
-  },
 
   story: {
-    eyebrow: "La Bohème",
-    heading: "The name has always been a memory of something that no longer exists.",
-    lede: "Vajana is a fish these waters no longer hold. We took its name for this place.",
-    more: "Read the story",
     passage: [
       "In Paris, around 1840, the young people who painted and wrote had no money. They had cold rooms under the roof and long evenings in cafés. The French called them bohémiens, a word that once meant nothing more than foreigner, someone from far away.",
       "Henri Murger wrote about them in 1851. Puccini turned it into an opera in 1896. Aznavour sang its farewell in 1965, long after that Paris had gone.",
@@ -118,7 +107,6 @@ export const en: Copy = {
 
   cta: {
     table: "Book a table",
-    evening: "Plan an evening",
     menu: "See the menu",
     call: "Call us",
     whatsapp: "WhatsApp",
@@ -126,8 +114,6 @@ export const en: Copy = {
 
   prefill: {
     table: "Hello! I would like to book a table at Vajana by La Bohème. Date: · Time: · People:",
-    evening:
-      "Hello! I would like to plan an evening at Vajana by La Bohème. Date: · People: · Occasion:",
   },
 
   a11y: {

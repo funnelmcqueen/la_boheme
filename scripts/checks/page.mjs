@@ -10,7 +10,6 @@ import { open, reporter, withBrowser } from "./harness.mjs";
 const SPEC_BANDS = {
   hero: [0, 0], atmosfera: [3, 8], kuzhina: [10, 16], signatures: [18, 21],
   menuja: [21, 30], peshku: [30, 36], vererat: [32, 38], tavoline: [32, 38],
-  mbremje: [38, 46], story: [46, 54],
 };
 
 await withBrowser(async (browser) => {

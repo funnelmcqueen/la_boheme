@@ -1,5 +1,4 @@
 import Image from "next/image";
-import Link from "next/link";
 import { Emblem } from "@/components/emblem/Emblem";
 import { Button } from "@/components/ui/Button";
 import type { Copy } from "@/content/copy/types";
@@ -218,57 +217,6 @@ function Houses({ note }: { note: string }) {
   );
 }
 
-/** 38–46m. Blocked on a night photograph of a table set for a celebration. */
-export function Mbremje({ copy, venue }: Props) {
-  return (
-    <section id="mbremje" className={styles.evening}>
-      <Photo slug="evening" copy={copy} sizes="100vw" className={styles.eveningPhoto} />
-      <div className={`vj-column ${styles.eveningText}`}>
-        <p className="vj-eyebrow">{copy.evenings.eyebrow}</p>
-        <h2>{copy.evenings.heading}</h2>
-        <p>{copy.evenings.body}</p>
-        <p>{copy.evenings.answer}</p>
-        <div className={styles.buttons}>
-          <Button href={telHref(venue)} variant="solid" track={{ channel: "tel", intent: "evening" }}>
-            {copy.cta.evening}
-          </Button>
-          <Button
-            href={whatsappHref(venue, copy, "evening")}
-            target="_blank"
-            rel="noopener"
-            track={{ channel: "whatsapp", intent: "evening" }}
-          >
-            {copy.cta.whatsapp}
-          </Button>
-        </div>
-      </div>
-    </section>
-  );
-}
-
-/** 46–54m. The deep, and the story of the name. */
-export function Story({ copy }: Props) {
-  return (
-    <section id="story" className={styles.story}>
-      <div className={styles.storyInner}>
-        <Emblem variant="mark" className={styles.storyMark} />
-        <p className="vj-eyebrow">{copy.story.eyebrow}</p>
-        <h2 className={styles.storyHeading}>{copy.story.heading}</h2>
-        <p className={styles.storyLede}>{copy.story.lede}</p>
-        <Link href={`${copy.prefix}/vajana/la-boheme`} className={styles.storyLink}>
-          {copy.story.more}
-        </Link>
-
-        <figure className={styles.easel}>
-          <Photo slug="easel" copy={copy} sizes="(max-width: 900px) 100vw, 620px" />
-          <figcaption className={styles.easelCaption}>{copy.story.caption}</figcaption>
-        </figure>
-      </div>
-    </section>
-  );
-}
-
-/** 54m. The venue list renders from the collection, holding one entry. */
 export function Footer({ copy, venue, venues }: Props & { venues: Venue[] }) {
   return (
     <footer className={styles.footer}>

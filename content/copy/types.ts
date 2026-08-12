@@ -84,19 +84,9 @@ export interface Copy {
     housesNote: string;
   };
 
-  evenings: {
-    eyebrow: string;
-    heading: string;
-    body: string;
-    answer: string;
-  };
 
+  /** Only the story *page* survives; the venue page's story section is gone. */
   story: {
-    eyebrow: string;
-    heading: string;
-    lede: string;
-    more: string;
-    /** The full passage, on its own page. */
     passage: string[];
     caption: string;
   };
@@ -111,17 +101,15 @@ export interface Copy {
 
   cta: {
     table: string;
-    evening: string;
     menu: string;
     call: string;
     whatsapp: string;
   };
 
-  /** wa.me prefills. Different per intent so the owner reads date, headcount and
-      occasion before he replies. */
+  /** wa.me prefill, so the owner reads date and headcount before he replies. The
+      evening prefill went with the Mbrëmje section — see lib/actions.ts. */
   prefill: {
     table: string;
-    evening: string;
   };
 
   a11y: {

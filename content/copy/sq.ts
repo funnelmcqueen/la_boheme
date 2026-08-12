@@ -8,7 +8,6 @@ export const sq: Copy = {
     { href: "#peshku", label: "Peshku" },
     { href: "#vererat", label: "Verërat" },
     { href: "#kuzhina", label: "Kuzhina" },
-    { href: "#mbremje", label: "Mbrëmje" },
     { href: "/vajana/la-boheme", label: "La Bohème" },
   ],
 
@@ -85,18 +84,8 @@ export const sq: Copy = {
     housesNote: "Tetë shtëpi. Emrat, jo logot — shih shënimin në dokumentacion.",
   },
 
-  evenings: {
-    eyebrow: "Mbrëmje dhe festa",
-    heading: "Tavolina të gjata pranë ujit",
-    body: "Ditëlindje, dasma të vogla, darka pune, mbrëmje me miq. Muzikë, dhe kuzhina në dispozicionin tuaj.",
-    answer: "Na shkruani datën dhe numrin e personave. Përgjigjemi po atë ditë.",
-  },
 
   story: {
-    eyebrow: "La Bohème",
-    heading: "Emri ka qenë gjithmonë kujtim për diçka që nuk është më.",
-    lede: "Vajana është një peshk që këto ujëra nuk e mbajnë më. Ne e morëm emrin e tij për këtë vend.",
-    more: "Lexo historinë",
     passage: [
       "Në Paris, rreth vitit 1840, të rinjtë që pikturonin dhe shkruanin nuk kishin para. Kishin dhoma të ftohta nën çati dhe mbrëmje të gjata nëpër kafene. Francezët i quajtën bohémiens, fjalë që dikur do të thoshte thjesht i huaj, dikush që vjen nga larg.",
       "Henri Murger shkroi për ta në 1851. Puccini e ktheu në opera në 1896. Aznavour i këndoi lamtumirën në 1965, kur ai Paris kishte ikur prej kohësh.",
@@ -117,7 +106,6 @@ export const sq: Copy = {
 
   cta: {
     table: "Rezervo tavolinë",
-    evening: "Organizo një mbrëmje",
     menu: "Shiko menunë",
     call: "Na telefono",
     whatsapp: "WhatsApp",
@@ -126,8 +114,6 @@ export const sq: Copy = {
   prefill: {
     table:
       "Përshëndetje! Dua të rezervoj një tavolinë te Vajana by La Bohème. Data: · Ora: · Persona:",
-    evening:
-      "Përshëndetje! Dua të organizoj një mbrëmje te Vajana by La Bohème. Data: · Persona: · Rasti:",
   },
 
   a11y: {

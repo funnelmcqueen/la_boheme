@@ -71,12 +71,6 @@ export const IMAGES: ImageSpec[] = [
     alt: { sq: "Vera e sjellë në tavolinë", en: "The wine carried to the table" },
   },
   {
-    slug: "evening",
-    source: "IMG_7905.JPG",
-    width: 1600,
-    alt: { sq: "Tarraca pas errësirës", en: "The terrace after dark" },
-  },
-  {
     slug: "easel",
     source: "IMG_7900.JPG",
     width: 1200,
