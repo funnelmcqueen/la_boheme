@@ -111,7 +111,3 @@ function Ornament() {
     </span>
   );
 }
-
-export function SignatureRosette() {
-  return <Emblem variant="mark" />;
-}

@@ -3,9 +3,17 @@
  * already moving on first paint: a depth gradient, caustics off the surface,
  * drifting shafts, the shoal, suspended matter, and the wave fronts.
  */
+/**
+ * The origin defaults are in viewport units, not percentages, because `.wave`
+ * positions itself off them with a transform and a percentage in `translate()`
+ * resolves against the element's own box — which is 0×0. They are the same two
+ * places the measured values land: 36% of a 52vw column is 18.72vw, and 25.5% of
+ * a 100svh hero is 25.5svh. Both are overwritten in pixels by `measure()` a frame
+ * later; these only have to be close for the frames before that.
+ */
 .sea {
-  --vj-ox: 36%;
-  --vj-oy: 25.5%;
+  --vj-ox: 18.72vw;
+  --vj-oy: 25.5svh;
   --vj-hole: 140px;
   --vj-s0: 0.26;
 
@@ -199,10 +207,20 @@
 
 /* ---------- the wave ---------- */
 
+/**
+ * Positioned by transform, not by left/top.
+ *
+ * `measure()` overwrites --vj-ox/--vj-oy with the emblem's measured baseline
+ * centre one frame after mount. As `left`/`top` that was a layout change on a
+ * pair of 70vw svgs, and it was the page's largest layout shift by an order of
+ * magnitude — 0.0221 of a 0.0253 CLS, reproducible to four decimal places across
+ * every run. A transform is exempt from layout shift and cheaper besides.
+ */
 .wave {
   position: absolute;
-  left: var(--vj-ox);
-  top: var(--vj-oy);
+  left: 0;
+  top: 0;
+  transform: translate(var(--vj-ox), var(--vj-oy));
   width: 0;
   height: 0;
   z-index: 6;
@@ -237,7 +255,11 @@
 }
 
 /* The seascape is motion in the vestibular sense and stops entirely. The descent
-   does not — see DepthEngine. */
+   does not — see DepthEngine.
+   Seascape.tsx's mount gate is what actually enforces this now: under reduce the
+   layer is never rendered, so this rule has nothing to match. It stays as the
+   second line of defence, because the cost of the gate regressing is a page full
+   of moving water for someone who asked for none. */
 @media (prefers-reduced-motion: reduce) {
   .sea {
     display: none;

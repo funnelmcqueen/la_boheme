@@ -378,10 +378,16 @@
 
 /* ---------- footer ---------- */
 
-.footer {
-  padding: clamp(56px, 7vw, 96px) clamp(24px, 6vw, 90px) clamp(70px, 8vw, 110px);
-  border-top: 1px solid var(--line);
-}
+/**
+ * No padding and no top rule here.
+ *
+ * Both are rhythm, and rhythm is decided by what a block sits next to — which a
+ * CSS Module cannot see. Worse, modules compile unlayered and unlayered CSS beats
+ * every @layer regardless of specificity, so padding declared here silently
+ * defeated `.vj-sep + footer { padding-top: 0 }` and the last separator on the
+ * page measured 50 above and 147 below for as long as the rule existed. See
+ * styles/rhythm.css.
+ */
 
 .footerGrid {
   display: grid;
@@ -414,7 +420,18 @@
   max-width: none;
 }
 
+/**
+ * 24px of target, not 16.
+ *
+ * These are 14px links on their own lines, so the text box was 16px tall and
+ * WCAG 2.2's target minimum is 24×24. The padding is vertical only and the
+ * negative margin takes it back out of the flow, so the footer's rhythm does not
+ * move — the target grows, the layout does not.
+ */
 .footerLink {
+  display: inline-block;
+  padding-block: 4px;
+  margin-block: -4px;
   color: var(--body);
   text-decoration: none;
   border-bottom: 1px solid var(--line);

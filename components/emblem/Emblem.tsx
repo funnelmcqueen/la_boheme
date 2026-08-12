@@ -16,8 +16,15 @@ import styles from "./Emblem.module.css";
  * also the point the rings turn about and the point the seascape leaves from, so
  * the mark and the water share one origin.
  *
- * Every rosette on the site is this component, at four sizes: hero 486px, chapter
- * divider 112px, house signatures 92px, and the drifting watermarks.
+ * Every rosette on the site is this component, and there are **six** of them on
+ * the venue page: the hero at 486px, the chapter divider at 112px, three house
+ * signatures at 92px, and one closing the story at 112px. The story page carries
+ * a seventh, a 386px `full`.
+ *
+ * Three sizes, not four. BUILD-BRIEF §10's fourth — large rosettes drifting
+ * behind sections at 7% opacity — is cancelled: on a page whose cost is
+ * compositing, a decorative layer at 7% opacity is not worth a layer. See
+ * DECISIONS.
  */
 export function Emblem({
   variant = "mark",

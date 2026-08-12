@@ -495,9 +495,13 @@ and **`vector-effect` re-declared on the paths in CSS**, because it is not an in
 property. A stroke set on the `<svg>` scales with the viewBox, so at 88px from a 760 box it
 lands at a tenth of a pixel and the mark disappears entirely.
 
-Pattern appears in four places and nowhere else: the entrance, a hairline patterned rule at
-section joins and around the menu sheet, large rosettes drifting behind sections at 7%
-opacity, and one small rosette above each signature dish.
+Pattern appears in three places and nowhere else: the entrance, a hairline patterned rule at
+section joins and around the menu sheet, and one small rosette above each signature dish.
+
+**The drifting watermarks are cancelled.** They were a fourth place — large rosettes behind
+sections at 7% opacity — and they were never built. Ruled out rather than added: the page's
+measured cost is compositing, a full-width decorative layer earns a compositing layer of its
+own, and 7% opacity is not worth one. Six emblems ship on the venue page. See DECISIONS.
 
 The entrance draws a hollow-centred rosette ring by ring, then draws the vajana inside it,
 then dissolves to the wordmark. Under 2.5s, once per session, skippable, overlay not gate.

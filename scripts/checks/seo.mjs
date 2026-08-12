@@ -41,9 +41,32 @@ await withBrowser(async (browser) => {
         restaurantName: restaurant?.name,
         sections: menu?.hasMenuSection?.length ?? 0,
         items: menu?.hasMenuSection?.reduce((n, s) => n + s.hasMenuItem.length, 0) ?? 0,
+        /**
+         * Two different assertions, because the prose and the machine-readable
+         * quantity are read by different consumers and only one of them existed.
+         *
+         * `description` is the rendered string a person sees. `priceSpecification
+         * .referenceQuantity` is what stops a crawler reading "9 000 L / kg" as a
+         * 9,000 lekë dish. An item is qualified if it is flat-priced (nothing to
+         * qualify), or a pair of sizes (two Offers), or carries the quantity.
+         */
         offersCarryUnit: menu?.hasMenuSection
           ?.flatMap((s) => s.hasMenuItem)
-          .every((i) => typeof i.offers?.description === "string" && /\d/.test(i.offers.description)),
+          .every((i) =>
+            [i.offers].flat().every(
+              (o) => typeof o?.description === "string" && /\d/.test(o.description),
+            ),
+          ),
+        offersQualifyQuantity: menu?.hasMenuSection
+          ?.flatMap((s) => s.hasMenuItem)
+          .every((i) => {
+            const offers = [i.offers].flat();
+            if (offers.length > 1) return offers.every((o) => typeof o.price === "number");
+            const q = offers[0]?.priceSpecification?.referenceQuantity;
+            // Flat-priced items carry no quantity, and should not.
+            const perUnit = / \/ /.test(offers[0]?.description ?? "");
+            return perUnit ? Boolean(q?.unitCode && q?.value) : !q;
+          }),
         /** "Vajana" alone collides with anatomical misspellings in search. It must
             never appear without "by La Bohème" in a title, meta field, alt text or
             structured data. */
@@ -91,6 +114,10 @@ await withBrowser(async (browser) => {
     );
     // `price` alone cannot express per kilo, per piece or per gram.
     report.check(`${tag} — offers carry their unit`, data.offersCarryUnit === true);
+    report.check(
+      `${tag} — per-unit offers carry a machine-readable quantity`,
+      data.offersQualifyQuantity === true,
+    );
   }
 
   // ---- the accessibility floor ----

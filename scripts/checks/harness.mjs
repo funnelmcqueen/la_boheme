@@ -52,10 +52,21 @@ export async function withBrowser(fn) {
 /**
  * Opens a page and waits for the fonts and the entrance to settle. Anything that
  * samples before this sees a page mid-entrance and reports nonsense.
+ *
+ * `listen` receives the page before it navigates, which is the only moment
+ * `pageerror` and `console` handlers can be attached and still catch anything.
+ * page.mjs used to attach them to a page it then closed, so its "no page errors"
+ * check could not fail and never had.
  */
-export async function open(browser, path = "/vajana", viewport = { width: 1440, height: 900 }) {
+export async function open(
+  browser,
+  path = "/vajana",
+  viewport = { width: 1440, height: 900 },
+  listen,
+) {
   const page = await browser.newPage();
   await page.setViewport(viewport);
+  listen?.(page);
   const url = `${baseUrl()}${path}`;
   try {
     await page.goto(url, { waitUntil: "networkidle0", timeout: 120_000 });

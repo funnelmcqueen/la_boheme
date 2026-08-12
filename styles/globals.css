@@ -9,6 +9,11 @@
 
 @import "tailwindcss";
 
+/* Unlayered, like the rules next/font used to emit. @font-face is not subject to
+   the cascade anyway; the :root font stacks in here are, and they must be able to
+   be overridden by nothing, because tokens.css reads through to them. */
+@import "./fonts.css";
+
 @import "./tokens.css" layer(vajana);
 @import "./ground.css" layer(vajana);
 @import "./type.css" layer(vajana);

@@ -1,5 +1,5 @@
 import type { Copy } from "@/content/copy/types";
-import { ALLERGY_NOTE, MENU, formatPrice } from "@/content/menu";
+import { ALLERGY_NOTE, MENU, formatPrice, type MenuItem } from "@/content/menu";
 import type { Venue } from "@/content/venues";
 
 /**
@@ -29,6 +29,54 @@ export function organization() {
   };
 }
 
+/**
+ * UN/CEFACT codes, which is what schema.org's `unitCode` expects.
+ *
+ * The rendered string ("9 000 L / kg") is for a reader; `unitCode` is for a
+ * crawler, and without it a per-kilo fish reads as a 9,000 lekë dish. That is a
+ * price a third higher than any plate on the menu, attached to the one section
+ * whose whole argument is that you pick the fish and it is weighed in front of
+ * you.
+ */
+const UNIT_CODE = { kg: "KGM", gram: "GRM", piece: "H87" } as const;
+
+/**
+ * An item's offer, or offers.
+ *
+ * `flat` is a plain Offer — a price with nothing to qualify. Everything else is a
+ * UnitPriceSpecification carrying the quantity that price buys. `pair` is the odd
+ * one: it is two sizes at two prices (S / L), so it is two Offers rather than one
+ * with a range, because a range would say the dish costs somewhere between them.
+ */
+function offersFor(item: MenuItem, copy: Copy) {
+  const rendered = formatPrice(item, copy.lang);
+  const base = { "@type": "Offer", priceCurrency: "ALL", description: rendered } as const;
+
+  if (item.unit === "pair") {
+    return [
+      { ...base, price: item.price, name: "S" },
+      { ...base, price: item.price2, name: "L" },
+    ];
+  }
+
+  if (item.unit === "flat") return { ...base, price: item.price };
+
+  return {
+    ...base,
+    price: item.price,
+    priceSpecification: {
+      "@type": "UnitPriceSpecification",
+      price: item.price,
+      priceCurrency: "ALL",
+      referenceQuantity: {
+        "@type": "QuantitativeValue",
+        value: item.unit === "gram" ? item.gramWeight : 1,
+        unitCode: UNIT_CODE[item.unit],
+      },
+    },
+  };
+}
+
 export function menuSchema(venue: Venue, copy: Copy) {
   return {
     "@type": "Menu",
@@ -43,14 +91,7 @@ export function menuSchema(venue: Venue, copy: Copy) {
         "@type": "MenuItem",
         name: item.name[copy.lang],
         ...(item.desc ? { description: item.desc[copy.lang] } : {}),
-        offers: {
-          "@type": "Offer",
-          price: item.price,
-          priceCurrency: "ALL",
-          // The rendered string carries the unit — per kilo, per piece, per gram —
-          // which `price` alone cannot express.
-          description: formatPrice(item, copy.lang),
-        },
+        offers: offersFor(item, copy),
       })),
     })),
     suitableForDiet: undefined,

@@ -35,6 +35,25 @@ main > section {
   padding-inline: clamp(24px, 6vw, 90px);
 }
 
+/**
+ * The page footer's own rhythm, here rather than in its module.
+ *
+ * It has to be here for the collapse rule below to be able to reach it: a CSS
+ * Module compiles unlayered, and unlayered CSS beats every @layer whatever the
+ * specificity, so `.footer { padding: ... }` in Sections.module.css won against
+ * `.vj-sep + footer { padding-top: 0 }` and the gap under the last separator was
+ * 147px against the 50 the other two measure. The rule had been correct and
+ * unreachable since it was written.
+ *
+ * The top rule moves with it, because whether the footer wants a hairline depends
+ * on whether something already divides it from the section above — which is the
+ * same thing the collapse rules know and a module does not.
+ */
+main > footer {
+  padding: clamp(56px, 7vw, 96px) clamp(24px, 6vw, 90px) clamp(70px, 8vw, 110px);
+  border-top: 1px solid var(--line);
+}
+
 /* `footer` is in this list because the last separator on the page is followed by
    one, not by a section — without it the final gap measures 50 above and 120
    below while the other two are honest. */

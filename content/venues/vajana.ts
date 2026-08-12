@@ -23,7 +23,13 @@ export const vajana: Venue = {
   phone: "+355699845030",
   whatsapp: "355699845030",
   instagram: "https://www.instagram.com/vajana.vlore/",
-  hours: { opens: "08:00", closes: "24:00" },
+  /**
+   * Machine-readable, and therefore ISO 8601, where hours run 00–23. "24:00" is
+   * out of range and validators reject it. The human-facing string is separate —
+   * `copy.chrome.open` says "8:00 — 24:00", which is how the door is described in
+   * Albanian and stays that way.
+   */
+  hours: { opens: "08:00", closes: "23:59" },
   priceRange: "$$$$",
   servesCuisine: ["Seafood", "Mediterranean", "Albanian"],
 };

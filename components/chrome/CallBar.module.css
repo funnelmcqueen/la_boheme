@@ -7,7 +7,18 @@
   display: none;
   gap: 10px;
   padding: 10px 14px calc(10px + env(safe-area-inset-bottom));
-  background: var(--ground);
+  /**
+   * A shade under the ground rather than exactly it.
+   *
+   * The bar is fixed chrome sitting on top of the page, so it wants to separate
+   * from the water behind it — and it has to. Its WhatsApp label is --logo at
+   * 11px, which on the ground's own 0m value measures 4.06:1 and fails AA. At 78%
+   * it is 4.87:1, and every metre deeper only improves it, because the ground
+   * darkens as --logo ramps toward blue-white.
+   *
+   * Fixed here rather than by lifting --logo, which is a locked brand value.
+   */
+  background: color-mix(in srgb, var(--ground) 78%, #000);
   border-top: 1px solid var(--line);
 }
 

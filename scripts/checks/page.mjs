@@ -15,16 +15,31 @@ const SPEC_BANDS = {
 
 await withBrowser(async (browser) => {
   const report = reporter("Page — descent, rhythm, payload");
+  /**
+   * Everything the page complains about, collected from the page that is actually
+   * loaded.
+   *
+   * The previous version attached these handlers to a fresh page, closed it, and
+   * then opened a different one — so `errors` could never be populated and "no page
+   * errors" passed on every run it had ever had. Nothing filtered here either: the
+   * favicon 404 this used to excuse was a real missing file, and excusing it is how
+   * it survived. If a request legitimately fails, fix the request.
+   */
   const errors = [];
-  const page = await browser.newPage();
-  page.on("pageerror", (e) => errors.push(String(e).slice(0, 140)));
-  page.on("console", (m) => {
-    // A 404 for the favicon is not a page fault.
-    if (m.type() === "error" && !/favicon|404/i.test(m.text())) errors.push(m.text().slice(0, 140));
-  });
-  await page.close();
+  const listen = (page) => {
+    page.on("pageerror", (e) => errors.push(`js: ${String(e).slice(0, 160)}`));
+    page.on("requestfailed", (r) =>
+      errors.push(`net: ${r.failure()?.errorText ?? "failed"} ${r.url().slice(0, 120)}`),
+    );
+    page.on("response", (r) => {
+      if (r.status() >= 400) errors.push(`http ${r.status()}: ${r.url().slice(0, 120)}`);
+    });
+    page.on("console", (m) => {
+      if (m.type() === "error") errors.push(`console: ${m.text().slice(0, 160)}`);
+    });
+  };
 
-  const view = await open(browser, "/vajana");
+  const view = await open(browser, "/vajana", { width: 1440, height: 900 }, listen);
 
   const data = await view.evaluate((ids) => {
     const height = document.documentElement.scrollHeight;
@@ -39,7 +54,41 @@ await withBrowser(async (browser) => {
       return { id, from: depthAt(top), to: depthAt(top + box.height) };
     });
 
-    /** Measured between visible edges: the mark's own box to the neighbour's. */
+    /**
+     * Measured between visible edges — which means the topmost element that
+     * actually paints, never the section box.
+     *
+     * Measuring to the box is how this check passed for a year while the last
+     * separator sat 50 above and 147 below: padding lives *inside* the box, so a
+     * section holding 96px of its own top padding still reports its edge exactly
+     * where the rule wants it. BUILD-BRIEF §10 says this in as many words — "measure
+     * the gap to the topmost element of the next section, not to the section box" —
+     * and the check did the opposite.
+     *
+     * Absolutely positioned descendants are skipped: a watermark or a decorative
+     * layer can sit above the content without being the thing a reader sees first.
+     */
+    const firstPainted = (root) => {
+      let top = Infinity;
+      // A visible top border is an edge a reader sees, so it counts — the footer
+      // carries a hairline and the type sits one pixel under it. Measuring only
+      // descendants would report 51 for a gap that visibly ends at 50.
+      const rootStyle = getComputedStyle(root);
+      const borderAlpha = Number(rootStyle.borderTopColor.match(/[\d.]+/g)?.[3] ?? 1);
+      if (parseFloat(rootStyle.borderTopWidth) > 0 && borderAlpha > 0.02) {
+        top = root.getBoundingClientRect().top;
+      }
+      for (const el of root.querySelectorAll("*")) {
+        const cs = getComputedStyle(el);
+        if (cs.position === "absolute" || cs.position === "fixed") continue;
+        if (cs.display === "none" || cs.visibility === "hidden") continue;
+        const box = el.getBoundingClientRect();
+        if (box.width === 0 || box.height === 0) continue;
+        if (box.top < top) top = box.top;
+      }
+      return top === Infinity ? root.getBoundingClientRect().top : top;
+    };
+
     const separators = [...document.querySelectorAll(".vj-sep, .vj-chapter")].map((sep) => {
       const previous = sep.previousElementSibling;
       const next = sep.nextElementSibling;
@@ -57,7 +106,10 @@ await withBrowser(async (browser) => {
       return {
         kind: sep.className,
         above: Math.round(m.top + scrollY - (anchor.getBoundingClientRect().bottom + scrollY)),
-        below: Math.round(next.getBoundingClientRect().top + scrollY - (m.bottom + scrollY)),
+        below: Math.round(firstPainted(next) + scrollY - (m.bottom + scrollY)),
+        // Kept so a failure says *why*: if these disagree the next block is holding
+        // padding of its own, which is the shape of every version of this bug.
+        belowToBox: Math.round(next.getBoundingClientRect().top + scrollY - (m.bottom + scrollY)),
         afterHero,
       };
     });
@@ -114,7 +166,12 @@ await withBrowser(async (browser) => {
       report.check(
         `separator 50/50 (${sep.kind.trim()})`,
         sep.above === 50 && sep.below === 50,
-        `${sep.above} / ${sep.below}`,
+        `${sep.above} / ${sep.below}` +
+          (sep.below === sep.belowToBox
+            ? ""
+            : `  (box edge says ${sep.belowToBox} — the next block is holding ${
+                sep.below - sep.belowToBox
+              }px of its own padding)`),
       );
     }
   }
@@ -122,7 +179,11 @@ await withBrowser(async (browser) => {
   // ---- payload and correctness ----
   report.check("one JSON-LD graph", data.jsonLd === 1, `${data.jsonLd}`);
   report.check("every image has alt text", data.imagesWithoutAlt === 0, `${data.imagesWithoutAlt} without`);
-  report.check("no page errors", errors.length === 0, errors[0] ?? "");
+  report.check(
+    "no page errors",
+    errors.length === 0,
+    errors.length ? `${errors.length}: ${[...new Set(errors)].slice(0, 3).join(" · ")}` : "",
+  );
   report.check(
     "emblems render off the sprite",
     data.uses >= data.emblems * 4,

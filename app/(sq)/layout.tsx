@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { fontClassName } from "@/components/shell/fonts";
 import { Shell } from "@/components/shell/Shell";
 import "@/styles/globals.css";
 
@@ -11,7 +10,7 @@ export const metadata: Metadata = {
 
 export default function AlbanianRootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="sq" className={fontClassName} suppressHydrationWarning>
+    <html lang="sq" suppressHydrationWarning>
       <Shell>{children}</Shell>
     </html>
   );

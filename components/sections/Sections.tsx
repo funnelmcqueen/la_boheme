@@ -6,7 +6,7 @@ import type { Copy } from "@/content/copy/types";
 import { imageBySlug } from "@/content/images";
 import { MENU, SIGNATURES, formatPrice } from "@/content/menu";
 import type { Venue } from "@/content/venues";
-import { telHref, whatsappHref } from "@/lib/actions";
+import { displayPhone, telHref, whatsappHref } from "@/lib/actions";
 import styles from "./Sections.module.css";
 
 type Props = { copy: Copy; venue: Venue };
@@ -297,7 +297,7 @@ export function Footer({ copy, venue, venues }: Props & { venues: Venue[] }) {
           <p className="vj-eyebrow">{copy.footer.bookings}</p>
           <p className={styles.footerLine}>
             <a href={telHref(venue)} className={styles.footerLink}>
-              +355 69 984 5030
+              {displayPhone(venue)}
             </a>
             <br />
             <a

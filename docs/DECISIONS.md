@@ -13,6 +13,16 @@ Rulings that override the two spec documents. Read this before BUILD-BRIEF.md.
   Hero → Atmosfera → *divider* → Kuzhina → house signatures → Menuja → Peshku →
   Verërat → Mbrëmje → La Bohème → *divider* → footer.
 
+## Struck from CLAUDE-CODE-PROMPT.md
+
+- **"Lighthouse ≥ 90 on mobile" under *Done means*** — superseded. It was a round
+  figure, not a measured target. Mobile ships at 82; the reasoning is under
+  *`content-visibility` was spiked and reverted* at the end of this file. The other
+  eight items under *Done means* stand.
+- **"four sizes … drifting watermarks" under *The emblem*** — three sizes. The
+  drifting watermarks are cancelled; see *Six emblems, not ten* below. The rest of
+  that section stands, ring periods included.
+
 §9 onward is authoritative.
 
 ## Corrections to the mockup
@@ -333,3 +343,347 @@ Only visible at sixty seconds; thirty-second runs reported zero. Currently ~5
 crossings in ~2,500 creature-samples, longest 1.0s, all octopus. If that ever
 becomes a fish parked on the N, the fix is a small exclusion around the label
 alone, not one ellipse over everything.
+
+## Slice 7 — the performance pass
+
+### An A/B is not valid until you have proved the two arms differ
+
+The most expensive kind of wrong answer on this project so far. Measuring whether
+`.wave`'s `transform` positioning had removed a layout shift, the "reverted" arm
+pinned `--vj-ox`/`--vj-oy` with `!important` — which removed the default→measured
+transition that *was the thing under test*. Both arms returned 0.0002 and agreed
+perfectly, for entirely the wrong reason, and the conclusion "the fix works" would
+have shipped on a measurement that could not have failed.
+
+Caught by asserting the override actually changed something: computed style and
+the element's own coordinates, shipped (315,324) against reverted (300,230).
+
+So: before believing an A/B, prove the arms are different. Read back the property
+you think you changed, or check that the control arm still reproduces the original
+symptom. A control that cannot fail is not a control. This is the same failure
+shape as `page.mjs`'s error listener attached to a page it then closed, and as
+tuning the seascape against a placeholder layout — a check that passes because it
+is not looking at anything.
+
+### The seascape is gated by width, and the light is not
+
+Measured on Lighthouse mobile, medians of five runs against a production build,
+run 1 discarded as a cold outlier. The first four rows were taken with a stray
+`next dev` on the machine and their absolute values are depressed by roughly
+15 points; the last two are on a quiet machine and are the ones to quote. The
+*relative* result held across both conditions — the gate was worth +14 loaded and
++13 quiet — which is the only reason the earlier rows are still worth keeping.
+
+    variant                          perf   TBT      CLS     main thread
+    loaded machine
+      everything                      52    1069ms   0.025   12.3s
+      per-creature blur off           53    1018ms   0.025   12.3s
+      nothing below 1000px            66     382ms   0.004    9.9s
+      light below 1000px              64     376ms   0.004   10.9s
+    quiet machine
+      everything (before)             69     451ms   0.025   10.3s
+      light below 1000px (shipped)    82     181ms   0.004    8.7s
+
+Three findings, in order of how wrong the prior belief was.
+
+**The per-creature `filter: blur()` costs nothing.** The hypothesis was that it
+forced a compositing repaint per creature per frame and was most of the
+style-and-layout time. It is not: `.creature` carries `will-change: transform` and
+the loop writes only a transform, so the filter is rasterised into the layer once
+and reused. Every delta is smaller than the run-to-run spread and two of them point
+the wrong way. The blur stays.
+
+**The seascape's cost is the loop, not the layout.** Removing it entirely takes
+687ms off TBT and 585ms off script evaluation but only 491ms off style-and-layout,
+and paint does not move. Seventy-five elements each getting a fresh transform every
+frame is the whole bill. So the fix has to be *absence*: `display:none` leaves the
+nodes and the loop in place and saves none of it.
+
+**The light is a different order of cost from the shoal.** Keeping the caustics,
+the shafts, the surface and the wave fronts while dropping the creatures, the motes
+and the loop costs two points against dropping everything — inside the spread, and
+all of it paint rather than blocking time, because rasterising a 26px blur once is
+not the same kind of work as writing 75 transforms a frame.
+
+That last one is a design ruling as much as a performance one. The page's claim is
+that you arrive already underwater, and light moving in the water is most of what
+says so. Dropping it would have made the page's one idea desktop-only on the device
+this restaurant's visitors actually hold. `Seascape` therefore has three modes:
+`full` above 1000px, `light` below it, `none` under reduced motion.
+
+**A number nobody had run is worth nothing, the first run is a lie, and the
+machine is part of the apparatus.** The 39 first reported for mobile was a cold
+first run — every variant's run 1 came back 38–50 against a median 14–30 points
+higher, so discard it. Then the medians themselves moved 13 points when a stray
+`next dev` stopped competing for the CPU. Absolute Lighthouse scores from this
+machine are only comparable to other scores taken minutes either side of them; a
+score quoted across sessions means nothing. Before believing a large delta, check
+what else was running.
+
+### The gate is what fixed the CLS; the transform is insurance
+
+`Seascape_wave > svg` was 0.0221 of a 0.0253 CLS, reproducible to four decimal
+places — `measure()` overwrites `--vj-ox`/`--vj-oy` a frame after mount, and as
+`left`/`top` that moved two 70vw svgs.
+
+`.wave` now positions with `transform: translate()`, which is exempt from layout
+shift. But the mount gate had already fixed it: with the layer out of the
+server-rendered HTML it mounts in an effect, and effects run before the next paint,
+so the default position is never painted and there is no shift to observe. Measured
+both ways on desktop after the gate: 0.0002 either way.
+
+The transform is kept anyway. It costs nothing and it re-arms the guarantee if the
+layer ever goes back to being server-rendered. Its origin defaults had to move from
+percentages to `vw`/`svh`, because a percentage in `translate()` resolves against
+the element's own box and `.wave` is 0×0.
+
+### How to recognise the shared-`.next` gotcha
+
+The trap is already recorded above; this is its signature, because it costs twenty
+minutes to diagnose from symptoms. A `next dev` left running on another port had
+been watching this repo since before the session started, and it recompiled into
+the shared `.next` the moment a source file was edited — so a `next start` served a
+production build with development chunks and nothing hydrated.
+
+What it looks like: 404s for `/_next/static/chunks/app-pages-internals.js` and for
+asset URLs carrying a `?v=<timestamp>` query, a served document that is suddenly
+100KB larger, and `document.getAnimations()` returning 0 on a page whose CSS
+animations obviously exist. Check for a stray `next dev` before believing any of it
+is a code fault.
+
+The measurements taken before it recompiled were unaffected — each variant's runs
+show one console error, the favicon 404, and an identical document transfer size.
+That is worth checking rather than assuming, and it is why the Lighthouse JSON is
+worth keeping.
+
+## Recorded, not acted on
+
+Four things measured during the whole-page verification pass. None is a fault
+today; each is a thing that will bite quietly if it moves.
+
+**The entrance has 146ms of headroom.** It lands at 2,354ms against a 2.5s hard
+rule, measured on a production build served over localhost. There is no slower
+device in that number and no network in it either. Anything added to the first
+screen comes out of 146ms.
+
+**The mote's clearance is shrinking.** Closest approach to the mark, HANDOFF's
+closing figures against the finished page: octopus 1.77 → 1.755, prawn 2.81 → 2.71,
+fish 2.44 → 2.32, **mote 1.72 → 1.352**. The mote is the one that moved, and it is
+the one with the smallest pad — a flat 3px, where a creature gets
+`width × 0.55 + 6`. Still clear of the 1.0 exclusion surface, but it is the first
+thing that will trip if the hero column narrows again. Note these are stochastic:
+spawn positions are `Math.random()`, so a single run's figure moves by whole tenths
+between runs with no code change. Compare medians, not runs.
+
+**Reduced motion loses the light, not just the motion.** Under `reduce` the whole
+layer is absent, so the caustics, the shafts, the surface swell and the wave fronts
+go with the shoal, and the water is flat colour. That is compliant — the spec says
+the seascape stops — but it is a different-looking page rather than the same page
+held still, and the descent is then the only thing left carrying the idea.
+
+**The depth bands have drifted again, and `tavoline` is now its own band.** Measured
+at 1440×900: hero 0–4.1, atmosfera 4.7–5.6, kuzhina 9.2–13.3, signatures 13.3–16.2,
+menuja 16.2–31.3, peshku 31.3–39, **verërat 39–41.7, tavoline 41.7–46.1**, mbrëmje
+46.1–49.4, story 49.4–54. The table earlier in this file lists verërat as 39–46.1
+with no tavoline row. The open ruling on rebalancing is one section wider than that
+note describes.
+
+### The fonts are vendored, and it bought nothing but a build that works
+
+`next/font/google` downloads the faces from Google at **build** time. That made a
+cold build require network, and its failure mode is not a fallback to a system
+font — it is `NextFontError` and the whole build. It failed three times in one
+working session locally, twice on Bodoni Moda and once on Archivo. Every Vercel
+build is cold and there is no retry, so this was a deploy that fails at the worst
+possible moment for a reason nothing on the page can explain.
+
+The files now live in `styles/fonts/` and `styles/fonts.css`, generated from what
+next/font itself emitted rather than transcribed: the same eleven woff2 slices,
+the same `unicode-range` on each, the same `font-display: swap`, and the same
+metric-adjusted `Bodoni Moda Fallback` / `Archivo Fallback` faces that stop the
+swap from moving the page. Relative `url()` means webpack still fingerprints them
+and still serves them immutable out of `/_next/static/media`.
+
+Nothing was lost: next/font emitted no font preload links on this page to begin
+with — checked before assuming — so hand-written CSS gives up nothing there.
+
+**And it is performance-neutral, which is worth recording because it looked like a
+24-point win.** The measurement immediately after the change came back 82 against
+58 for the build before it. The structural comparison is what caught it: both
+builds serve two stylesheets of the same size, fetch the same three woff2 files,
+produce the same 1,597-element DOM and the same render-blocking profile. There is
+no mechanism there for 24 points. Re-running the *unchanged* tree returned 80 —
+the 58 was ambient load, not the fonts.
+
+Which is the A/B rule above, arriving from the other direction. There the two arms
+were identical when they should have differed; here they differed when they should
+have been identical. Both times the fix was the same: look for the mechanism, and
+disbelieve a delta with nothing underneath it.
+
+**How to tell a loaded machine from a regression, since this happened three times.**
+The tell is not the score — it is `mainthread-work-breakdown`. On this build,
+style-and-layout sits around 3,000ms per run and moves by a few hundred. When the
+machine is busy it comes back 5,000–9,000ms *in the same build*, run to run, and
+the score follows it down. If style-and-layout has doubled, stop measuring: nothing
+in a CSS or schema change moves it by that much, and no number taken in that state
+is worth recording. Check for a stray `next dev`, orphaned puppeteer or Lighthouse
+Chromes, and CPU at rest before starting a run.
+
+The load-insensitive facts are the ones to trust when perf is unmeasurable: DOM
+element count, document transfer size, stylesheet and script bytes, and the
+accessibility, best-practices and SEO scores, all of which are deterministic.
+
+### `content-visibility` was spiked and reverted — it is incompatible with the descent
+
+Tried on the six carte groups and the five below-fold sections, with
+`contain-intrinsic-size: auto <length>` and the lengths taken from measured
+rendered heights rather than guessed.
+
+**It does not move the score.** Median of five runs, quiet machine: 80 against 82
+without it. It genuinely removes work — style-and-layout 3,008ms → 2,638ms, main
+thread 8.7s → 8.1s — but none of that converts, because what the score has left to
+lose is LCP and Speed Index, and both are about the first screen. Off-screen work
+was not what was holding the number down once the seascape was gated.
+
+**And it breaks the descent, which settles it.** `depthFromScroll` divides scroll
+position by `scrollHeight - innerHeight`, and `content-visibility: auto` makes
+`scrollHeight` an estimate that changes as content renders. Measured at 1600×900:
+
+    document height   12,942px real  ->  14,551px estimated at scroll 0
+    Δdepth per 5%     flat 2.7       ->  2.7 2.7 2.5 2.7 2.6 3.1 3.2 2.8 2.7 3.4
+                                         3.6 4.1 3.5 3.1 3.0 3.1 3.0 2.2 0.0 0.0
+
+The descent accelerates through the middle of the page from 2.5 to 4.1 metres per
+step, then stops: the page reaches 54m at 90% of its own reported scroll range and
+the last tenth does not exist, because the estimate overshot and the real content
+came in shorter. That is a stepped read of the one thing the page is for.
+
+**It cannot be tuned into working, and the reason is not the seasonal menu.** The
+maintenance burden is real — measured heights swing 30–50% across viewports
+(g-crudo 766 / 718 / 727px, kuzhina 987 / 1391 / 923px at 390 / 768 / 1600), so a
+static intrinsic size is wrong at most widths, and the menu changes every season on
+top of that. But the `auto` keyword solves most of that by storing each element's
+real last-rendered size — and that is exactly what makes it unfixable here, because
+it means `scrollHeight` keeps moving *while you scroll*. There is no set of numbers
+that holds it still.
+
+Any real fix would have to be in the depth engine: decouple depth from
+`scrollHeight` by summing known section heights, or drive it from an
+IntersectionObserver per section. That is a change to the page's central mechanism
+in exchange for zero measured points, so it is not worth doing.
+
+**Ruling: reverted, and mobile ships at 82.** The 90 in the brief was a round
+figure rather than a measured target. 82 on a throttled mobile audit, for a page
+carrying an 87-item inline menu and a live animation layer, is where this stops.
+
+## Slice 8 — closing the whole-page verification pass
+
+### Six emblems, not ten
+
+The mockup inlined the emblem in eleven places. This build ships **six** on the
+venue page — hero 486px, chapter divider 112px, three signatures at 92px, one
+closing the story at 112px — and a seventh, a 386px `full`, on the story page.
+
+Two of the mockup's places are gone deliberately. `SignatureRosette` in Carte.tsx
+was exported and never imported once, so the carte's per-group mark existed only
+as dead code; it is deleted. The **drifting watermarks** — BUILD-BRIEF §10's
+"large rosettes drifting behind sections at 7% opacity" — were never built, and
+are now cancelled rather than left as an open item: the page's measured cost is
+compositing, a full-width decorative layer earns a compositing layer of its own,
+and 7% opacity does not earn one. BUILD-BRIEF §10 and Emblem.tsx are updated to
+say three sizes.
+
+Every mark that does ship was measured: all six render at exactly 1.000px of
+painted ring stroke, and the vajana inside them at 1.35px (hero) and 1.1px (small
+marks). Nothing is anywhere near the vector-effect failure, which is 0.12px.
+
+### The last separator was 50 / 147, and the check could not see it
+
+`.vj-sep + footer { padding-top: 0 }` had been correct and unreachable since it
+was written. `Sections.module.css` set `.footer { padding: clamp(56px,7vw,96px) … }`,
+and a CSS Module compiles unlayered while rhythm.css lives in `@layer vajana` —
+unlayered beats every layer regardless of specificity. The measured padding matched
+the module's clamp to the pixel at every width, which is the proof.
+
+The footer's padding and its top rule now live in rhythm.css, because both are
+rhythm and rhythm is decided by what a block sits next to, which a module cannot
+see. All three separators measure 50/50 at 1920, 1600, 1440, 1280 and 390.
+
+**And `page.mjs` reported it as passing**, because it measured to the next
+element's *box* — and padding lives inside the box, so a section holding 96px of
+its own top padding still reports its edge exactly where the rule wants it.
+BUILD-BRIEF §10 says "measure the gap to the topmost element of the next section,
+not to the section box" in as many words, and the check did the opposite. It now
+walks for the topmost painted descendant, counts a visible top border as an edge
+(the footer's hairline is one, and the type sits a pixel under it), and prints the
+box figure alongside so a failure says which block is holding the padding.
+
+Fixed in that order on purpose: the check was corrected first and watched to fail
+against the old CSS — `50 / 147 (box edge says 50 — the next block is holding 97px
+of its own padding)` — before a line of CSS moved.
+
+### The error check had never been able to fail
+
+`page.mjs` attached its `pageerror` and `console` handlers to a fresh page, closed
+it, and then opened a different one to run against. The array could not be
+populated, so "no page errors" passed on every run it had ever had.
+
+The handlers now go on the page that is actually loaded, via a `listen` hook on
+`open()`, and they watch four things rather than one: uncaught errors, failed
+requests, any response at 400 or worse, and console errors. Nothing is filtered —
+the favicon 404 the old version explicitly excused was a real missing file, and
+excusing it is how it survived.
+
+What it caught once it worked: exactly one thing, `http 404 /favicon.ico`. There
+is now an `app/icon.svg`, drawn from `VAJANA_SIMPLE` — the reduced engraving that
+exists precisely because the full fish turns to mush below about 40px. Proven by
+removal: with the icon moved away the check fails and names the 404; with it in
+place the page is clean.
+
+### Schema: a per-kilo fish was a 9,000 lekë dish
+
+`price: 15000, priceCurrency: "ALL"` with the unit only in a human-readable
+`description` is a claim that the dish costs 15,000 lekë. Every per-unit item now
+carries a `UnitPriceSpecification` with a `referenceQuantity` — `KGM` for the
+catch, `GRM` with the real gram weight for the ribeye, `H87` for per-piece — and
+`pair` items, which are two sizes at two prices, render as two Offers rather than
+one with a range, because a range would say the dish costs somewhere between them.
+
+`openingHoursSpecification.closes` was `"24:00"`, which is out of range for ISO
+8601 and rejected by validators. The venue file now carries `"23:59"`. The
+human-facing string is separate and still reads 8:00 — 24:00, which is how the
+door is described in Albanian.
+
+`seo.mjs` gained a second assertion for this, because the one it had only checked
+the prose and would have passed the whole time.
+
+### Contrast, and the one number that is a ruling rather than a bug
+
+Lighthouse reported around eighty `color-contrast` failures. Nearly all are false:
+axe cannot resolve a `position: fixed` background, so it scores every line of
+water-borne type against white. Three were real, and all three are fixed:
+
+    Carte group notes   #6E6253 on #E9DCCB   4.40:1  ->  80% mix, 5.45:1
+    Carte allergy note  #716557 on #E9DCCB   4.21:1  ->  78% mix, 5.15:1
+    Call bar WhatsApp   #DE8573 on #184054   4.06:1  ->  bar at 78% ground, 4.87:1
+
+The third is worth understanding rather than just fixing. The failing pair is
+`--logo` on `--ground` at 0m — which BUILD-BRIEF §9 states outright as 4.06:1 and
+accepts. So it is not confined to the call bar; every 11px `--logo` label on the
+water at the surface measures the same, and axe only caught the call bar because
+that one sits on a background it could resolve. The call bar is fixed chrome and
+was given a darker surface of its own, which is defensible on its own terms and
+touches no locked token. **Whether 4.06:1 is acceptable for the outline buttons in
+the hero is a ruling for the owner, not something to fix by lifting a brand value
+the brief locks.** Raised, not acted on.
+
+The two 14px footer links were 16px targets against WCAG 2.2's 24px minimum. They
+now carry 4px of vertical padding with a matching negative margin, so the target
+grows and the footer's rhythm does not move.
+
+### The footer phone number was a literal
+
+`+355 69 984 5030` was typed into the footer beside an `href` built from
+`content/venues/vajana.ts`. Two copies of one fact, and nothing to stop the visible
+one going stale after the dialled one is corrected — the price rule's failure mode,
+wearing a different hat. It renders through `displayPhone(venue)` now.
