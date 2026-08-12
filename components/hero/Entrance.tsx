@@ -27,10 +27,8 @@ export function Entrance() {
 
     // Whether it runs at all was already decided, synchronously, before paint —
     // see entrance-script.ts. This only lands it.
-    if (root.dataset.entrance !== "running") {
-      root.dataset.entrance = "done";
-      return;
-    }
+    // Skipped, or already finished: the pre-paint script has said so. Leave it.
+    if (root.dataset.entrance !== "running") return;
 
     const land = () => {
       if (root.dataset.entrance === "done") return;
@@ -38,6 +36,7 @@ export function Entrance() {
       window.removeEventListener("scroll", land);
       window.removeEventListener("pointerdown", land);
       window.removeEventListener("keydown", onKey);
+      mark?.removeEventListener("transitionend", onEnd);
     };
     const onKey = (event: KeyboardEvent) => {
       if (event.key === "Escape") land();
@@ -48,6 +47,23 @@ export function Entrance() {
     window.addEventListener("pointerdown", land, { once: true });
     window.addEventListener("keydown", onKey);
 
+    /**
+     * "landed" — the mark has stopped moving.
+     *
+     * It exists because "done" carries a raised z-index: the scrim is full-bleed
+     * at z-index 150 and covers the header, and the travelling lockup has to sit
+     * over it. `.text` creates its own stacking context, so the lift has to go on
+     * the column, and it has to come back off the moment the drift ends or the
+     * hero would paint over the header for the rest of the session.
+     */
+    const mark = document.querySelector<HTMLElement>('[data-vj-emblem="full"]');
+    const onEnd = (event: TransitionEvent) => {
+      if (event.propertyName !== "transform" || event.target !== mark) return;
+      mark?.removeEventListener("transitionend", onEnd);
+      root.dataset.entrance = "landed";
+    };
+    mark?.addEventListener("transitionend", onEnd);
+
     // Only the listeners come off. Landing the entrance here would end it the
     // instant React's development double-invoke unmounted the effect, which looks
     // exactly like the animation never running.
@@ -55,6 +71,7 @@ export function Entrance() {
       window.removeEventListener("scroll", land);
       window.removeEventListener("pointerdown", land);
       window.removeEventListener("keydown", onKey);
+      mark?.removeEventListener("transitionend", onEnd);
     };
   }, []);
 

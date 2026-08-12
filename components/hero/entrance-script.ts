@@ -8,6 +8,11 @@
  *
  * Everything it writes is a transform or an opacity. No layout is affected, so the
  * entrance cannot shift anything, and the page underneath is complete either way.
+ *
+ * Three states, and the third matters: "running" is the mark held at the centre,
+ * "done" is it drifting home, "landed" is it at rest. Anyone who skips the
+ * entrance goes straight to "landed", because "done" carries the raised z-index
+ * that lifts the lockup over the scrim and a repeat visitor must not keep it.
  */
 export const ENTRANCE_SCRIPT = `(function(){
 var r=document.documentElement;
@@ -19,9 +24,9 @@ try{
   var reduced=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   var deep=location.hash!=='';
   var seen=sessionStorage.getItem('vj-entrance')==='seen';
-  if(reduced||deep||seen){r.dataset.entrance='done';return}
+  if(reduced||deep||seen){r.dataset.entrance='landed';return}
   var e=document.querySelector('[data-vj-emblem="full"]');
-  if(!e){r.dataset.entrance='done';return}
+  if(!e){r.dataset.entrance='landed';return}
   var x=0,y=0,n=e;
   while(n){x+=n.offsetLeft;y+=n.offsetTop;n=n.offsetParent}
   var cx=x+e.offsetWidth/2-(window.pageXOffset||0);
@@ -30,21 +35,16 @@ try{
   r.style.setProperty('--vj-ent-dy',(window.innerHeight/2-cy).toFixed(1)+'px');
   sessionStorage.setItem('vj-entrance','seen');
   r.dataset.entrance='running';
-  /* Two frames, not a timer.
-     
-     This was setTimeout(2300), and the number was never the duration it looked
-     like: it is scheduled on the main thread at exactly the moment hydration is
-     using it, so it fires late by however busy the page is. Measured on a loaded
-     machine, a nominal 300ms fired at 751, 844 and 1257ms across three runs — the
-     slip was larger than the value. On a phone on 4G, which is the case §6 is
-     written for, it is larger still.
+  /* Two seconds, and the mark is alive for all of them: the rings keep turning
+     and the vajana keeps drifting in the hollow, exactly as they do in the hero,
+     because it *is* the hero's emblem and nothing here freezes it.
 
-     requestAnimationFrame twice instead: the first frame paints the mark at the
-     centre, the second releases it. The hold is then one frame rather than a
-     promise the platform cannot keep, and the entrance's length is the travel —
-     which is a CSS transition on the compositor and does hold its duration. */
-  requestAnimationFrame(function(){requestAnimationFrame(function(){
-    r.dataset.entrance='done';
-  })});
-}catch(err){r.dataset.entrance='done'}
+     A timer is right for this and rAF was right for the version before it. The
+     slip that made setTimeout unreliable at 300ms — measured firing at 751, 844
+     and 1257ms — is hydration competing for the main thread, and hydration is
+     long finished two seconds in. Measured below.
+
+     This overruns BUILD-BRIEF §6's 2.5s deliberately; see DECISIONS. */
+  setTimeout(function(){r.dataset.entrance='done'},2000);
+}catch(err){r.dataset.entrance='landed'}
 })()`;

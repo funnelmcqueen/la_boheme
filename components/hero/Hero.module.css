@@ -274,20 +274,47 @@
  * the journey and settles without a stop, and the hold in front of it is short
  * enough that the mark is moving almost as soon as it is seen.
  *
- * The smoothness is the curve far more than the length. At 1.35s of expo-out the
- * mark was already home before the eye had followed it; at 1.2s of this one it is
- * still moving the whole way.
+ * A drift, not a move. cubic-bezier(0.37, 0, 0.63, 1) is symmetric — it leaves
+ * slowly enough that you notice it has started rather than seeing it go, carries
+ * through the middle, and settles just as slowly. The expo ease-out it replaced
+ * (0.16, 1, 0.3, 1) covered four fifths of the distance in the first third of its
+ * 1.35s, which read as a snap.
  *
- * 1.2s and not longer because of BUILD-BRIEF §6's 2.5s, which is the budget for
- * the whole entrance — see scripts/checks/entrance.mjs, which used to time only
- * the pause in front of it and passed at 2.3s while the entrance itself ran 3.65s.
- * Measured end to end on a loaded machine this lands at 2.2–2.4s, of which some
- * 650ms is frames blocked by hydration rather than anything set here. If §6's 2.5s
- * ever moves, this is the value to spend it on: the travel wants to be 1.7s.
+ * Two seconds held, two seconds drifting. That is four, against BUILD-BRIEF §6's
+ * 2.5 — overruled deliberately, and the reasoning is in DECISIONS. What made the
+ * 2.5 safe still holds: the page is complete and readable underneath from first
+ * paint, the entrance is an overlay and never a gate, it runs once per session,
+ * and a tap, click, scroll or Escape ends it immediately.
  */
 :global(html[data-entrance="done"]) .emblem {
   transform: none;
-  transition: transform 1.2s cubic-bezier(0.42, 0, 0.15, 1);
+  transition: transform 2s cubic-bezier(0.37, 0, 0.63, 1);
+}
+
+/**
+ * Only the mark goes over the scrim.
+ *
+ * The scrim is fixed and full-bleed at z-index 150 — it covers the header too,
+ * which is what makes the opening read as an opening. The lockup has to sit above
+ * it and everything else in the column has to stay under it.
+ *
+ * `.text` is what makes that awkward: `position: relative; z-index: 3` is a
+ * stacking context, so a child cannot climb out of it. Lifting the column instead
+ * lifted the headline with it, and the reveal delays then bought nothing — the
+ * text faded up over a scrim that was still fully opaque. So the column gives up
+ * its context for the duration and the emblem alone is raised.
+ *
+ * `landed` puts both back. Without that state a repeat visitor — who is served
+ * "done" from the start — would carry a hero column stacked over the header.
+ */
+:global(html[data-entrance="running"]) .text,
+:global(html[data-entrance="done"]) .text {
+  z-index: auto;
+}
+
+:global(html[data-entrance="running"]) .emblem,
+:global(html[data-entrance="done"]) .emblem {
+  z-index: 200;
 }
 
 :global(html[data-entrance="running"]) .text > :not(.emblem) {
@@ -299,22 +326,22 @@
   opacity: 0;
 }
 
-/* Behind the mark and inside its travel, so the column is already there when the
-   emblem arrives rather than appearing after it has stopped. */
+/* Behind the mark and at the end of its drift, not during it: revealed early, the
+   column and the travelling wordmark occupy the same space and overlap. */
 :global(html[data-entrance="done"]) .text > :not(.emblem) {
   opacity: 1;
   transform: none;
-  transition: opacity 0.95s ease, transform 0.95s cubic-bezier(0.42, 0, 0.15, 1);
+  transition: opacity 0.8s ease, transform 0.8s cubic-bezier(0.42, 0, 0.15, 1);
 }
 
-:global(html[data-entrance="done"]) .headline { transition-delay: 0.3s; }
-:global(html[data-entrance="done"]) .rule { transition-delay: 0.42s; }
-:global(html[data-entrance="done"]) .lede { transition-delay: 0.54s; }
-:global(html[data-entrance="done"]) .buttons { transition-delay: 0.66s; }
+:global(html[data-entrance="done"]) .headline { transition-delay: 1.1s; }
+:global(html[data-entrance="done"]) .rule { transition-delay: 1.25s; }
+:global(html[data-entrance="done"]) .lede { transition-delay: 1.4s; }
+:global(html[data-entrance="done"]) .buttons { transition-delay: 1.55s; }
 
 :global(html[data-entrance="done"]) .panel {
   opacity: 1;
-  transition: opacity 1.2s ease 0.45s;
+  transition: opacity 1s ease 1.2s;
 }
 
 @media (prefers-reduced-motion: reduce) {

@@ -99,13 +99,24 @@ await withBrowser(async (browser) => {
 
   const fresh = await run(browser, { label: "fresh session" });
   report.check("runs once on a fresh session", fresh.ran, fresh.ran ? "" : "never ran");
-  // BUILD-BRIEF §6's budget is the whole entrance, not the pause in front of it.
+  /**
+   * BUILD-BRIEF §6 said 2.5s for the whole entrance. Overruled by the owner: the
+   * mark now holds for two seconds, alive, and drifts home over two more. See
+   * DECISIONS.
+   *
+   * 5.5s against a 4s nominal, because the measured figure is not the nominal one.
+   * The hold is a setTimeout competing with hydration and lands at 2.3–2.45s, and
+   * the drift's 2s stretches to about 2.3 as frames are dropped — 4.6–4.8s end to
+   * end on a loaded machine. The budget is set to catch a runaway, not to fail on
+   * machine load, and it is measured over the right span: from the mark appearing
+   * to the mark at rest, rather than over the pause in front of it.
+   */
   report.check(
-    "stays under 2.5s, mark appearing to mark at rest",
-    fresh.duration !== null && fresh.duration < 2500,
+    "stays under 5.5s, mark appearing to mark at rest",
+    fresh.duration !== null && fresh.duration < 5500,
     fresh.duration === null ? "never settled" : `${fresh.duration}ms`,
   );
-  report.note("  of which the hold before it moves", `${fresh.hold}ms`);
+  report.note("  of which the hold before it drifts", `${fresh.hold}ms`);
 
   for (const condition of [
     { label: "second load in the same session", twice: true },

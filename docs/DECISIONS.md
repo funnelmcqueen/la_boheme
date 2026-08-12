@@ -9,6 +9,20 @@ Rulings that override the two spec documents. Read this before BUILD-BRIEF.md.
   (`--ink-verm` …) all belong to the design §9 replaced. None of them survive in
   the approved mockup. Type (Bodoni Moda / Archivo) is still live — it is
   restated in CLAUDE-CODE-PROMPT.md.
+- **§6's "Total under 2.5s"** — overruled by the owner. The entrance is a grand
+  opening: the emblem holds at the centre of the screen for two seconds, alive —
+  rings turning, the vajana drifting in its hollow, because it *is* the hero's own
+  emblem and nothing freezes it — and then drifts home over two more. Four seconds
+  nominal, 3.7–4.8s measured depending on machine load.
+
+  What made the 2.5s safe still holds, and is the reason this is affordable: the
+  page is complete and readable underneath from first paint, the entrance is an
+  overlay and never a gate, it runs once per session, it is skipped for reduced
+  motion and for hash deep links, and a tap, click, scroll or Escape ends it
+  immediately. Nobody on 4G waits for it; they scroll and it is gone.
+  `scripts/checks/entrance.mjs` now guards 5.5s, and guards it over the whole
+  entrance rather than the pause in front of it.
+
 - **§7 Page order** — dead. The live order is the one in CLAUDE-CODE-PROMPT.md:
   Hero → Atmosfera → *divider* → Kuzhina → house signatures → Menuja → Peshku →
   Verërat → Mbrëmje → La Bohème → *divider* → footer.
@@ -687,3 +701,40 @@ grows and the footer's rhythm does not move.
 `content/venues/vajana.ts`. Two copies of one fact, and nothing to stop the visible
 one going stale after the dialled one is corrected — the price rule's failure mode,
 wearing a different hat. It renders through `displayPhone(venue)` now.
+
+### The entrance was invisible, and three probes in a row said otherwise
+
+The scrim is `position: fixed` at `z-index: 150` and covers everything including
+the header — which is what makes the opening read as an opening. The emblem it is
+supposed to be revealing sat at `z-index: 2` inside `.text` at 3. So for as long as
+the entrance has existed it played a flat blue rectangle for two and a bit seconds,
+and the comment in Entrance.tsx — "a scrim only, the emblem itself is the hero's,
+moved by CSS" — described something that was never on screen.
+
+Fixing it is not one z-index. `.text` is `position: relative; z-index: 3`, which is
+a stacking context, so a child cannot climb out of it. Lifting the column instead
+lifted the headline with it, and the text then faded up over a scrim that was still
+fully opaque — visibly worse. So the column gives up its stacking context for the
+duration (`z-index: auto`) and the emblem alone is raised to 200.
+
+That is what the third state is for. `running` is the mark held, `done` is it
+drifting, **`landed`** is it at rest — and `landed` is what puts the z-index back.
+Without it a repeat visitor, who is served `done` from the pre-paint script, would
+carry a hero column stacked permanently over the header. Anyone skipping the
+entrance now goes straight to `landed` for the same reason.
+
+**And every screenshot-based probe lied about it, in three different ways.** One
+rounded the mark's position to integers, so sub-pixel drift read as "not moving"
+and 300-odd frames collapsed to 8 — that one had me convinced the travel ran at
+7fps and cost three changes that were later reverted. One counted frames across
+seven seconds of a two-second move and reported idle fps as travel fps. One started
+its clock on the first *rendered* frame, which hydration blocks for 600–900ms, so
+every sample landed after the entrance had finished. A twenty-frame filmstrip then
+reported the whole entrance finishing in 900ms; a single screenshot at the same
+point does not, so the filmstrip's own round-trips were ending it.
+
+What is trustworthy: a rAF timeline that records state, position and opacity and
+takes no pictures, plus one screenshot at the end. `entrance.mjs` has always worked
+that way, and its numbers were right the whole time while three ad-hoc probes
+disagreed with it. When a purpose-built check and a quick probe disagree, the check
+is the one that has been reviewed.

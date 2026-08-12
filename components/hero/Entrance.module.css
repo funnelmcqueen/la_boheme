@@ -1,7 +1,13 @@
 /**
- * The scrim darkens to the water's own surface colour behind the travelling mark,
- * then clears. It never blocks a click and never covers content that has not
- * already painted.
+ * The scrim holds the water's own surface colour behind the drifting mark, and
+ * clears only at the end of the drift.
+ *
+ * The delay is the point. Fading it from the moment the mark is released revealed
+ * the column while the lockup was still crossing it, and the wordmark sat on top
+ * of the headline for the better part of a second. It now stays up for the first
+ * 1.1s of the 2s drift and clears as the mark arrives.
+ *
+ * It never blocks a click and never covers content that has not already painted.
  */
 .scrim {
   position: fixed;
@@ -10,7 +16,7 @@
   background: var(--ground);
   opacity: 0;
   pointer-events: none;
-  transition: opacity 1.4s ease;
+  transition: opacity 0.9s ease 1.1s;
 }
 
 :global(html[data-entrance="running"]) .scrim {
