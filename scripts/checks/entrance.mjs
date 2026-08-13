@@ -103,18 +103,18 @@ await withBrowser(async (browser) => {
   report.check("runs once on a fresh session", fresh.ran, fresh.ran ? "" : "never ran");
   /**
    * BUILD-BRIEF §6 said 2.5s for the whole entrance. Overruled by the owner: the
-   * mark now holds for three seconds, alive, and drifts home over two more. See
+   * mark now holds for two seconds, alive, and drifts home over two more. See
    * DECISIONS.
    *
-   * 6.5s against a 5s nominal, because the measured figure is not the nominal one:
+   * 5.5s against a 4s nominal, because the measured figure is not the nominal one:
    * the drift's 2s stretches as frames are dropped under hydration. The budget is
    * set to catch a runaway, not to fail on machine load, and it is measured over
    * the right span — from the mark appearing to the mark at rest, rather than over
    * the pause in front of it.
    */
   report.check(
-    "stays under 6.5s, mark appearing to mark at rest",
-    fresh.duration !== null && fresh.duration < 6500,
+    "stays under 5.5s, mark appearing to mark at rest",
+    fresh.duration !== null && fresh.duration < 5500,
     fresh.duration === null ? "never settled" : `${fresh.duration}ms`,
   );
   report.note("  of which the hold before it drifts", `${fresh.hold}ms`);

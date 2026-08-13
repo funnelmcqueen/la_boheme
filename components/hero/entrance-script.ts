@@ -42,16 +42,16 @@ try{
   r.style.setProperty('--vj-ent-dx',(window.innerWidth/2-cx).toFixed(1)+'px');
   r.style.setProperty('--vj-ent-dy',(window.innerHeight/2-cy).toFixed(1)+'px');
   r.dataset.entrance='running';
-  /* Three seconds, and the mark is alive for all of them: the rings keep turning
+  /* Two seconds, and the mark is alive for both of them: the rings keep turning
      and the vajana keeps drifting in the hollow, exactly as they do in the hero,
      because it *is* the hero's emblem and nothing here freezes it.
 
      A timer is right for this and rAF was right for an earlier, much shorter
      version. The slip that made setTimeout unreliable at 300ms — measured firing
      at 751, 844 and 1257ms — is hydration competing for the main thread, and
-     hydration is long finished three seconds in.
+     hydration is long finished two seconds in.
 
      This overruns BUILD-BRIEF §6's 2.5s deliberately; see DECISIONS. */
-  setTimeout(function(){r.dataset.entrance='done'},3000);
+  setTimeout(function(){r.dataset.entrance='done'},2000);
 }catch(err){r.dataset.entrance='landed'}
 })()`;

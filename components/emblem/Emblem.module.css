@@ -189,25 +189,32 @@
  * screens come up 24px short. 860px covers them and leaves 900-high screens on the
  * full 486px mark.
  */
-@media (max-height: 860px) {
+/**
+ * The masthead is what gives when the column will not fit, and it now has to give
+ * more than it did: the hero holds 40px clear under its CTA and the header wants
+ * real air above the mark, so on anything short the column is pinned at both ends.
+ * Measured before this: at 1280×800 the crown overlapped the header by 17px.
+ */
+@media (max-height: 900px) {
   .full {
-    width: min(88%, 386px);
-    margin-bottom: 26px;
+    width: min(88%, 372px);
+    margin-bottom: 22px;
   }
 
   .full .name {
-    padding-top: 18px;
+    padding-top: 16px;
   }
 }
 
-/* 1280×800 needs another 30px out of the column. */
+/* 1280×800 needs another 60px out of the column. */
 @media (max-height: 820px) {
   .full {
-    width: min(84%, 344px);
+    width: min(80%, 296px);
+    margin-bottom: 16px;
   }
 
   .full .name {
-    padding-top: 14px;
+    padding-top: 11px;
   }
 }
 

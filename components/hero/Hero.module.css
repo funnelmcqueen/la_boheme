@@ -30,7 +30,7 @@
   /* Clears the fixed header. The column is bottom-aligned in a full-height row, so
      this only bites when the column is tall enough to reach the top — which it is,
      and the emblem's crown was sitting 12px under the header. */
-  padding: calc(var(--vj-header-h, 78px) + clamp(18px, 3vh, 40px))
+  padding: calc(var(--vj-header-h, 78px) + clamp(34px, 5vh, 72px))
     clamp(28px, 4vw, 70px) 0 clamp(30px, 4.5vw, 76px);
 }
 
@@ -180,9 +180,15 @@
  * column came out 32px over; the emblem has already given up its size by here, so
  * the next thing to go is the air above it.
  */
+/**
+ * Short viewports still clear the header — the flat `padding-top: 24px` this
+ * replaces put the mark's crown 17px *over* it at 1280×800, because the column is
+ * taller than the row there and `align-self: end` pushes the overflow upward.
+ * Less air than a tall screen gets, but air.
+ */
 @media (max-height: 920px) {
   .text {
-    padding-top: 24px;
+    padding-top: calc(var(--vj-header-h, 78px) + 30px);
   }
 
   .rule {
@@ -190,18 +196,33 @@
   }
 }
 
-/* Shorter still — 1280×800. The emblem gives up size before the type does. */
+/**
+ * Shorter still — 1280×800, where the column is pinned at both ends: 40px clear
+ * under the CTA below, the header above, and 705px of content in a 760px box.
+ *
+ * The emblem gives up its size first and has already done so by here (296px), so
+ * the headline is next: at clamp(38px, 5.4vw, 72px) it was 228px of the column on
+ * its own, more than the masthead. It is the only block left big enough to matter.
+ */
 @media (max-height: 820px) {
   .emblem {
-    margin-bottom: 14px;
+    margin-bottom: 12px;
+  }
+
+  .headline {
+    font-size: clamp(32px, 4vw, 50px);
+  }
+
+  .eyebrow {
+    margin-bottom: 18px;
   }
 
   .buttons {
-    margin-top: 18px;
+    margin-top: 16px;
   }
 
   .lede {
-    line-height: 1.6;
+    line-height: 1.55;
   }
 }
 
