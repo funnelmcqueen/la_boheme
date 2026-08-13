@@ -1,164 +1,125 @@
 # Handoff
 
-Written at the end of the first build session. Assumes you have the repo and no
-memory of that session.
+Written at the end of the second session. Assumes you have the repo and no memory
+of either.
 
-Read `docs/DECISIONS.md` before `docs/BUILD-BRIEF.md`. The brief is stratified —
-its §5 and §7 describe a design that §9 onward replaced — and DECISIONS records
-every ruling that overrides it.
+Read `docs/DECISIONS.md` before `docs/BUILD-BRIEF.md`. Both spec documents are now
+stratified — BUILD-BRIEF's §5 and §7 describe a design its own §9 replaced, and
+several rulings in §6 and §11 have been overruled since. DECISIONS records every
+override and is the file that wins.
 
 ---
 
 ## Where it stands
 
-All six slices are built. The site runs on Next 15.5.7, `npm test` is 52 green,
-`npm run check` is five browser checks green, `npm run typecheck` and `npm run
-build` are clean, and all four routes prerender static.
-It is pushed to `funnelmcqueen/la_boheme` on `main`. **It is not deployed
-anywhere** — that push is the whole of the deployment so far.
+The site is built, verified and merged to `main`. It runs on Next 15.5.7. `npm
+test` is 52 green, `npm run check` is five browser checks green, `npm run
+typecheck` and `npm run build` are clean, and all four routes plus the icon
+prerender static.
 
-| slice | what it is | state |
-|---|---|---|
-| 1 | Tokens, the fixed ground layer, the depth engine | done |
-| 2 | Type via `next/font`, header, status bar, call bar, buttons, section rhythm | done |
-| 3 | The emblem: `mandala_mech` ported, `<symbol>` sprite, four sizes | done |
-| 4 | The seascape: one rAF, bounded basin, three species, the emblem field | done |
-| 5 | The hero: emblem, headline, photograph, the entrance | done |
-| 6 | Sections in page order, the carte from `menu.ts`, schema and metadata | done |
+**It has never been deployed.** A Vercel project called `vajana` exists and this
+directory is linked to it, but nothing has been pushed to it. See *Before it goes
+live* — the first item there is not optional.
 
 Measured on the finished page at 1440×900: the descent runs 0 → 54 m over one
-scroll, all three separators measure 50/50 between visible edges, the page is
-12,883px and 2,041 DOM nodes, and six emblems render off one sprite.
+scroll, both interior separators measure 50/50 between visible edges, the page is
+9,838px and 1,938 DOM nodes, and six emblems render off one sprite.
+
+## What changed in the second session
+
+The first session built it. The second one verified it, and the verification found
+that three of the things it was most proud of were not true.
+
+**The shoal was never drawn.** Eleven creatures, sixty seconds of physics tests, a
+tuned repulsion field, and a whole thread in DECISIONS about clamp firings — all of
+it invisible. The stroke rule matched a class the generator never emits, so every
+creature computed to `stroke: none`. Every check passed, because they all measured
+where the creatures *were* and none of them touched a pixel.
+
+**The entrance was never visible either.** The scrim is full-bleed at z-index 150
+and the emblem it exists to reveal sat at z-index 2. It played a flat blue
+rectangle. It also fired once per session, so the first load consumed it and every
+reload after that skipped it — which is why nobody caught it.
+
+**The last separator measured 50 above and 147 below.** The rule that was supposed
+to fix it had been correct and unreachable since it was written: a CSS Module
+compiles unlayered, and unlayered beats every `@layer`. `page.mjs` reported it as
+passing because it measured to the section box, and padding lives inside the box.
+
+Each is fixed, and in each case the check that should have caught it is fixed
+alongside — that is the pattern to keep. The full write-ups are in DECISIONS under
+*Slice 7*.
+
+Also landed: the seascape is gated by width, the fonts are vendored, Gabriel's
+portrait is in, two sections were removed, the section rhythm was tightened twice,
+the footer was rebuilt around the emblem, and the ground carries light.
 
 ## Nothing is in flight
 
-There is no half-finished work. The seascape thread that ran across slices 4 and 5
-is closed — the numbers below are the record of it, not a queue.
+There is no half-finished work and no uncommitted state. `main` is at `1fd0cfb`.
 
-## The seascape thread, and how it closed
+## Before it goes live
 
-This is the part most likely to be misremembered, so here it is in full.
+**1. `SITE` is a placeholder.** `lib/schema.tsx:17` reads `https://vajana.al`.
+Every canonical, every hreflang pair and every schema `@id` derives from it.
+Deployed anywhere else, each page tells Google the real version lives at a domain
+that may serve nothing — on a site built to capture search. One line, and nothing
+downstream can be verified until it is right.
 
-At the end of slice 5 the seascape was re-measured in the real hero for the first
-time, and came back:
+**2. Gabriel's quote has no sign-off.** It ships as a direct quote from a named
+person. He co-authored the Instagram post his portrait came from, so he is party to
+the venue's marketing, but that is not approval to publish his words.
 
-    804 clamp firings, 116 wordmark overlaps, 111 dome overlaps over 30s
+**3. The Instagram handle disagrees with itself.** The portrait came from a post by
+`vajana_beach`; `content/venues/vajana.ts` gives the venue's Instagram as
+`vajana.vlore`. That value is both the footer link and the schema's `sameAs`.
 
-All three are resolved. What each turned out to be:
+**4. `docs/` is candid working notes in a public repo** — pending sign-off on a
+quote, GBP fixes, a trademark filing, commentary on the mockup. Delete it from the
+public repo or make the repo private. The client can find it.
 
-**The 804 was a measurement error.** The probe printed `sea.clamps()`, a cumulative
-counter since mount, instead of a delta over the sampling window. The true
-steady-state figure was 799 in thirty seconds — the same order, but arrived at
-honestly. If you write a new probe, subtract a baseline.
+**5. Lighthouse has only ever been run against localhost**, on a machine that was
+competing for the CPU. Mobile measured 69 → 82 across the performance pass. 82 is
+the accepted number and 90 was explicitly ruled out — see DECISIONS — but it should
+be re-measured once there is a real URL.
 
-**Every one of the 799 was an octopus.** Broken down by species: fish 0, prawn 0,
-mote 0. Closest approach at the time — fish 2.16, prawn 2.72, mote 1.68, octopus
-0.968, where 1.0 is the exclusion surface.
+## Blocked on the client
 
-**The cause was the field's onset being expressed in ellipse units.** `um < 3.4`
-scales with the shape, so scoping the keep-out from the whole lockup to the dome
-alone shrank the *warning distance* with it: vertical onset fell from ~833px to
-~639px, and the octopus — the one creature that cannot turn off its axis — arrived
-with 200px less room. Reach is now `FIELD_REACH × column width` in
-`components/sea/swim.ts`, set to **0.78** to reproduce the original distance. A
-first attempt at 0.34 changed nothing (920 firings); the replacement has to match
-what it replaced.
+**A cellar photograph.** Verërat runs on type and one bottle. It works; a real
+image is better. It is the last genuinely missing photograph — the chef arrived,
+and the night-table frame stopped mattering when Mbrëmje was removed.
 
-**What that left was structural.** Sixty wordmark overlaps survived, all octopus:
-"only rise" and "never touch the mark" cannot both hold for a creature whose path
-crosses a mark spanning most of the column, and the wordmark sits directly under
-the dome, in its lane. Octopuses now have the water *below* the mark and re-enter
-at the bottom on reaching the underside of the lockup, fading over the last stretch.
-
-Final, over thirty seconds in the real hero:
-
-    wordmark overlaps 0 · dome overlaps 0 · clamp firings 0
-    closest approach — mote 1.72, fish 2.44, prawn 2.81, octopus 1.77
-
-No separate exclusion around the label was needed.
-
-## Three bugs found in the mockup
-
-All three exist in `vajana-mockup-final.html` and were carried in before being
-caught. Each is fixed here and written up in DECISIONS.
-
-**`shortestArc` is wrong beyond ±540°.** `((to - from + 540) % 360) - 180` assumes a
-non-negative remainder; JavaScript's `%` keeps the sign of the dividend. A prawn's
-drawn angle accumulates — measured between −1035° and +448° over half a minute — so
-the gap does exceed 540, and when it does the creature takes the long way round.
-Which is the spinning the chase exists to prevent.
-→ `components/sea/swim.ts`, `shortestArc` and `normaliseAngle`.
-
-**Octopuses pin at the ceiling.** "Only rise" forces `vy` negative *after* the soft
-wall runs, so the ceiling can never turn one back. Measured: both parked against the
-backstop at y = −28 within four seconds and stayed there.
-→ `components/sea/swim.ts`, the re-entry block at the end of `step`.
-
-**Octopuses stall beneath the mark.** The field pushes down, "only rise" flips it
-back up, and capping horizontal speed against `|vy|` made it unrecoverable — as the
-conflict crushed `vy` the cap collapsed with it and closed the only way out.
-Measured `vy ≈ −1.4` against a cruising speed of 25.9.
-→ `components/sea/swim.ts`, the octopus branch: cap against cruising speed, and both
-species relax their axis constraint near the mark.
-
-The general lesson is in DECISIONS under *Axis constraints need a stated exception*.
-
-## Blocked, and on whom
-
-**The chef's portrait — on the client.** §11's crop implies a screen capture at
-least 1380px wide; the delivered photography is all camera originals at 2160×2700
-and up, and none can take it. The owner said the source is an Instagram capture on
-his side and a camera original may exist with the client. The slot renders at the
-crop's own proportion so the section will not need re-laying out, and the frame runs
-**ungraded** when it arrives.
-
-**A night table set for a celebration — on the client.** Mbrëmje currently runs a
-dusk-graded daylight frame darkened in CSS. That is a placeholder, not a grade.
-
-**A cellar photograph — on the client.** Verërat runs on type and one portrait.
-
-**Gabriel's quote — on the owner.** It is his own words from Instagram and ships as
-a direct quote. Needs sign-off before it goes live.
-
-**Two wine houses — on the sommelier.** Tassinaia → Castello del Terriccio and
-Blangé → Ceretto are inferred; the menu lists only the wine names.
-
-**The domain.** `SITE` in `lib/schema.tsx` is `https://vajana.al`. Every canonical,
-hreflang and schema `@id` derives from it. Set it before anything goes public.
+**Two wine houses.** Tassinaia → Castello del Terriccio and Blangé → Ceretto are
+inferred; the menu lists only the wine names. Confirm with the sommelier.
 
 ## Open decisions
 
-**The depth bands have drifted from §9's table.** Rendering the full carte inline is
-mandated and its length is the argument, but it pushes the lower sections deeper
-than the table describes — Verërat now sits at 39–46.1 m against 32–38, Mbrëmje at
-46.1–49.4 against 38–46. The descent itself is intact. But photographs were assigned
-by measured luminance to bands, so those two sit in water several metres darker than
-their frames were chosen for. Either the table describes the mockup's shorter menu
-and this is fine, or the page order wants rebalancing. Not touched.
+**BUILD-BRIEF §8's second conversion is unreachable.** Mbrëmje was the only entry
+point for the "evening" intent, so `Intent` is now `"table"` alone and
+`cta.evening` / `prefill.evening` are gone. Either that is fine or the evening CTA
+needs a home somewhere else.
 
-## What I would do next, in this order
+**The depth bands have drifted a long way from §9's table.** Measured at 1440×900:
+hero 0–5.4, atmosfera 6.3–7.5, kuzhina 12.1–16.7, signatures 16.7–19.6, menuja
+19.6–39, peshku 39–48.4, verërat 48.4–51.1, tavolinë 51.1–54. The descent itself is
+intact, but photographs were assigned to bands by measured luminance, and the deep
+is now the cellar rather than the story. The wine photograph sits in water several
+metres darker than it was chosen for.
 
-1. **Set `SITE`** to the real domain and deploy to Vercel. Import the repo at
-   vercel.com/new — it needs no configuration and no environment variables. Nothing
-   downstream can be verified until the site has a URL.
-2. **Run Lighthouse on mobile** against the deployed URL and close whatever it
-   finds. The target is ≥ 90. The sprite and `next/image` were the two structural
-   moves toward it; it has never actually been measured, and a claim about a score
-   nobody has run is worthless.
-3. **Rule on the depth bands** above, and rebalance the page order if that is the
-   call. Do it before anyone photographs anything new, since it changes which band
-   each frame has to match.
-4. **Land the three photographs** as they arrive. The chef is ungraded and never
-   composited onto a new background; the other two go through
-   `scripts/grade-images.ts`.
-5. **Delete `docs/` from the public repo, or make the repo private.** It carries
-   candid working notes — pending sign-off on a direct quote, GBP fixes, a trademark
-   filing, commentary on the mockup — and the repo is public and the client can find
-   it.
-6. **The English copy needs a final pass.** It is a faithful translation, not
-   English written first.
+**The English copy is a faithful translation, not English written first.**
 
-## Running the checks
+**Small and pre-existing:** `cta.call` and `menu.eyebrow` are unreferenced copy; the
+header's four `#anchor` links point at nothing on `/vajana/la-boheme`.
+
+## Branches
+
+    main                          the site
+    design-pass                   identical to main, merged, safe to delete
+    rescue/funnel-copy-generator  three commits of an unrelated project that were
+                                  force-pushed over main by mistake and rescued
+                                  before main was restored. Rehome it, then delete.
+
+## Running it
 
 ```bash
 npm install
@@ -169,46 +130,36 @@ npm run build        # stop the dev server first — they share .next
 ```
 
 `npx vite-node scripts/grade-images.ts` regrades the photography into `public/img`
-from the sources listed in `content/images.ts`.
+from the sources in `content/images.ts`. The chef is `ungraded: true` and the script
+must leave him alone.
 
 ### What the tests assert
 
-**`components/depth/depth.test.ts` — 14.** Ramp endpoints, clamping outside the
-table, linear interpolation, that the ground darkens monotonically, and that the
-warm accents genuinely invert rather than dim. Plus one that reads `styles/tokens.css`
-and fails if its `:root` values drift from `depthVars(0)` — that duplication is
-deliberate, so first paint is already at the surface with nothing to hydrate, and
-this is what stops it rotting.
+**`components/depth/depth.test.ts` — 14.** Ramp endpoints, clamping, interpolation,
+that the ground darkens monotonically, and that the warm accents genuinely invert
+rather than dim. Plus one that reads `styles/tokens.css` and fails if its `:root`
+values drift from `depthVars(0)` — that duplication is deliberate, so first paint is
+already at the surface, and this is what stops it rotting.
 
-**`components/emblem/geometry.test.ts` — 9.** That the crown stays inside the
-dome's cut, that each variant is its own geometry rather than a subset, the locked
-ring periods, and that the vajana clears the inner lip — recomputing §10's own
-arithmetic, because the lip, the hollow and the fish all move it.
+**`components/emblem/geometry.test.ts` — 9.** That the crown stays inside the dome's
+cut, that each variant is its own geometry, the locked ring periods, and that the
+vajana clears the inner lip.
 
 **`components/emblem/Emblem.test.ts` — 3.** The `vector-effect` regression test. It
-renders the small mark at 92px in headless Chrome and measures *painted weight*, not
-the presence of the attribute — because the failure it guards against is precisely
-one where the attribute is present and has no effect, since CSS cannot select into a
-`<use>` shadow tree. The discriminator is the fraction of pixels past half intensity:
-**28.4% with the effect, 0.0% without.** The middle test asserts that zero. Keep it:
-it is the only thing proving the other two still measure something.
+measures *painted weight* at 92px rather than the presence of the attribute, because
+the failure it guards against is one where the attribute is present and has no
+effect. 28.4% of pixels past half intensity with it, 0.0% without. **Read this one
+before writing any new check** — the seascape had the same bug for the whole life of
+the project precisely because nothing did this for the creatures.
 
 **`components/sea/swim.test.ts` — 16.** Sixty simulated seconds of physics with no
-browser: that nothing leaves the basin, that nothing reaches the mark, that a fish
-mirrors and never rotates through 180°, that an octopus only ever rises, that only a
-prawn chases a full heading, and that every drawn angle changes no faster than its
-own chase rate — which is what "chases, never snaps" means as an assertion. Also a
-sweep of `shortestArc` over every angle pair, which is what caught the >540° bug.
+browser. Note what that means: it cannot see whether anything paints.
 
-**`content/menu.test.ts` — 10.** That no price string exists anywhere outside
-`content/menu.ts`, by walking every `.ts`/`.tsx`/`.css` file for the shapes a price
-takes. Includes a guard-the-guard case, so it cannot pass by finding no files.
+**`content/menu.test.ts` — 10.** That no price string exists outside
+`content/menu.ts`, by walking every `.ts`/`.tsx`/`.css` file. Includes a
+guard-the-guard case.
 
 ### The browser checks
-
-`npm test` cannot cover everything: two of these need a running server and thirty to
-sixty seconds of live motion, because both failures they catch are invisible in a
-single frame. They live in `scripts/checks/` and each exits non-zero on failure.
 
 ```bash
 npm run dev                 # one terminal
@@ -217,32 +168,45 @@ npm run check:seascape      # or one at a time
 ```
 
 `CHROME_PATH` overrides Chrome resolution; `VAJANA_URL` or `--url=` overrides the
-base URL, which defaults to port 3000.
+base URL.
 
-- **`page.mjs`** — the descent runs surface to deep and bottoms out at 54 m, both
-  interior separators measure 50/50 between visible edges, one JSON-LD graph, alt
-  text everywhere, no page errors, emblems off the sprite. Reports each section's
-  depth band against §9 without gating on it.
-- **`viewports.mjs`** — the CTA clears the fold by 40px at all four required
-  desktop sizes and the hero is one screen at each; on phones it clears the call
-  bar and drops its duplicate WhatsApp button.
+- **`page.mjs`** — the descent surface to deep and 54 m, both interior separators
+  50/50 measured to the first *painted* element and clamped to clipping ancestors,
+  one JSON-LD graph, alt text everywhere, no page errors of any kind, emblems off
+  the sprite. Reports each section's depth band without gating on it.
+- **`viewports.mjs`** — the CTA clears the fold by 40px at four desktop sizes and
+  the call bar on phones; the hero is one screen at each.
 - **`seo.mjs`** — both locales: `lang`, one `h1` carrying *Vajana by La Bohème*,
   canonical, hreflang, a schema graph whose `parentOrganization` and `hasMenu`
   resolve, offers carrying their unit, and that "Vajana" never appears alone. Then
   the floor: 360px, heading order, skip link, visible focus.
-- **`entrance.mjs`** — runs once and lands under 2.5s; skipped on a second load, a
-  hash deep link, and reduced motion.
-- **`seascape.mjs`** — population across six ten-second windows, closest approach
-  per species, clamp firings, and whether anything settles on the wordmark. Checks
-  the keep-out is where the dome is before reading anything else.
+- **`entrance.mjs`** — times the whole entrance, mark appearing to mark at rest,
+  under 5.5s; asserts it runs *again* on a reload, and is skipped for reduced
+  motion and hash deep links.
+- **`seascape.mjs`** — that every creature resolves a real stroke and carries
+  `non-scaling-stroke`, then population across ten-second windows, closest approach
+  per species, clamp firings, and whether anything settles on the wordmark.
 
-`scripts/checks/README.md` lists the five mistakes that produced wrong numbers
-during the build — the cumulative clamp counter, measuring against a placeholder,
-polling the entrance after `load`, `scroll-behavior: smooth`, and running for
-thirty seconds instead of sixty. Read it before writing anything new alongside them.
+`scripts/checks/README.md` lists the mistakes that produced wrong numbers during the
+first build. DECISIONS' *Slice 7* lists the ones from the second, which are worse,
+because they are all the same mistake: **a check that passes because it is not
+looking at anything.** Four separate instances — an error listener attached to a
+closed page, a separator measured to a box instead of an edge, physics tested with
+no DOM, and an entrance timed over its pause rather than itself.
 
-One thing the checks deliberately allow: a creature briefly crossing the wordmark.
-The keep-out is the dome, not the lockup, because type on a solid baseline tolerates
-a fish passing behind it and an ellipse over the whole mark left the water no middle.
-The check fails only if something *settles* there. Currently ~5 crossings in ~2,500
-creature-samples, longest 1.0s, all octopus.
+The rule that came out of it, and the one worth keeping: **an A/B is not valid until
+you have proved the two arms actually differ.** Read back the property you think you
+changed, or check that the control still reproduces the symptom. A control that
+cannot fail is not a control.
+
+## The local gotcha, and how to recognise it
+
+`next build` and `next dev` share `.next`, so building while a dev server is up —
+even one on another port, even one you forgot about — overwrites its chunks. It bit
+three times in one session.
+
+What it looks like: 404s or 400s for `/_next/static/css/*.css` and
+`app-pages-internals.js`, asset URLs carrying a `?v=<timestamp>` query, a served
+document suddenly 100KB larger, and `document.getAnimations()` returning 0 on a page
+whose animations obviously exist. Check for a stray `next dev` before believing any
+of it is a code fault.
