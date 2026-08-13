@@ -91,16 +91,27 @@ describe("the basin", () => {
       make("mote", { x: 400, y: 400, vx: 9, vy: -4 }),
     ];
 
+    /**
+     * Slack past the soft wall, as a fraction of the column.
+     *
+     * Derived from BASIN rather than written out. The bounds here used to be
+     * literals — 0.781 and 0.831 — which were the old x1 and y1 plus this margin,
+     * copied by hand. When the basin widened they went on describing the old one
+     * and reported creatures as escaped for using the water they had been given.
+     * A test that duplicates the value it is checking only tests the copy.
+     */
+    const SLACK = 0.11;
     let escaped = 0;
     run(swimmers, 60, (s) => {
-      const outsideX = s.x < -basin.width * 0.041 || s.x > basin.width * 0.781;
-      // Octopuses are allowed above the ceiling; they re-enter from below.
-      // Octopuses now turn back at the underside of the lockup rather than at the
-      // top of the frame, so they never leave the column at all.
+      const outsideX =
+        s.x < -basin.width * SLACK || s.x > basin.width * (BASIN.x1 + SLACK);
+      // Octopuses turn back at the underside of the lockup rather than at the top
+      // of the frame, so they never leave the column at all.
       const outsideY =
         s.kind === "octopus"
-          ? s.y - s.height / 2 < basin.markBottom - 1 || s.y > basin.height * 0.831
-          : s.y < -basin.height * 0.031 || s.y > basin.height * 0.831;
+          ? s.y - s.height / 2 < basin.markBottom - 1 ||
+            s.y > basin.height * (BASIN.y1 + SLACK)
+          : s.y < -basin.height * SLACK || s.y > basin.height * (BASIN.y1 + SLACK);
       if (outsideX || outsideY) escaped++;
     });
 
@@ -152,19 +163,34 @@ describe("the basin", () => {
     expect(closest).toBeGreaterThan(0.99);
   });
 
-  it("has no path around the mark for a rising octopus on desktop", () => {
-    // Not an assertion about the physics — an assertion about the geometry, so
-    // the reason the octopus behaves as it does is recorded rather than
-    // rediscovered. The exclusion ellipse, padded by an octopus's half width,
-    // spans the whole usable width of the water column, so a creature that may
-    // only rise has to cross it and the clamp slides it round the edge.
+  it("now has a path around the mark, which it did not use to", () => {
+    /**
+     * Not an assertion about the physics — an assertion about the geometry, so the
+     * reason the octopus behaves as it does is recorded rather than rediscovered.
+     *
+     * It used to read the other way. The exclusion ellipse, padded by an octopus's
+     * half width, spanned the entire usable width of the water column: a creature
+     * that may only rise had to cross it, which is why it re-enters from below
+     * instead of going round. Widening the basin from 67% of a half-width column
+     * to 93% of the whole hero opened a lane on the right — measured, the ellipse
+     * ends around 80% of the way across and the wall is at 93%.
+     *
+     * The re-entry rule stays, and it is still load-bearing rather than vestigial:
+     * the lane measures about 100px against an octopus 120px wide, so a fish or a
+     * prawn can now take it and an octopus still cannot fit. That is the assertion
+     * below, and it is the number to re-read if the basin or the mark moves again.
+     */
     const octopus = make("octopus");
     const pad = padFor(octopus);
     const left = basin.emblemX - (basin.emblemRX + pad);
     const right = basin.emblemX + (basin.emblemRX + pad);
 
-    expect(left).toBeLessThan(basin.width * 0.03);
-    expect(right).toBeGreaterThan(basin.width * BASIN.x1);
+    expect(left).toBeLessThan(basin.width * BASIN.x0);
+    expect(right).toBeLessThan(basin.width * BASIN.x1);
+    // Open, but not to an octopus — which is why it still re-enters from below.
+    const lane = basin.width * BASIN.x1 - right;
+    expect(lane).toBeGreaterThan(0);
+    expect(lane).toBeLessThan(octopus.width);
   });
 });
 

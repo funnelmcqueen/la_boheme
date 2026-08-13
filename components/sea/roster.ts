@@ -25,17 +25,17 @@ export interface Spec {
 }
 
 export const CREATURES: Spec[] = [
-  { kind: "fish", vw: 9.6, speed: 21.9, opacity: 0.78, blur: 0.19, beat: 6.0, art: FISH_REAL },
-  { kind: "fish", vw: 8.4, speed: 28.0, opacity: 0.71, blur: 0.0, beat: 7.3, art: FISH_REAL },
-  { kind: "fish", vw: 7.6, speed: 28.5, opacity: 0.62, blur: 0.04, beat: 7.4, art: FISH_REAL },
-  { kind: "fish", vw: 7.0, speed: 24.2, opacity: 0.54, blur: 0.02, beat: 6.8, art: FISH_REAL },
-  { kind: "fish", vw: 6.4, speed: 25.6, opacity: 0.47, blur: 0.23, beat: 7.9, art: FISH_REAL },
-  { kind: "fish", vw: 5.8, speed: 17.4, opacity: 0.4, blur: 0.12, beat: 6.4, art: FISH_REAL },
-  { kind: "prawn", vw: 7.8, speed: 22.6, opacity: 0.68, blur: 0.46, beat: 4.2, art: PRAWN },
-  { kind: "prawn", vw: 6.4, speed: 26.6, opacity: 0.51, blur: 0.19, beat: 3.7, art: PRAWN },
-  { kind: "prawn", vw: 5.4, speed: 16.5, opacity: 0.4, blur: 0.15, beat: 4.9, art: PRAWN },
-  { kind: "octopus", vw: 6.6, speed: 25.9, opacity: 0.65, blur: 0.21, beat: 5.6, art: OCTOPUS },
-  { kind: "octopus", vw: 7.8, speed: 19.0, opacity: 0.48, blur: 0.1, beat: 6.9, art: OCTOPUS },
+  { kind: "fish", vw: 9.6, speed: 12.0, opacity: 0.78, blur: 0.19, beat: 6.0, art: FISH_REAL },
+  { kind: "fish", vw: 8.4, speed: 15.4, opacity: 0.71, blur: 0.0, beat: 7.3, art: FISH_REAL },
+  { kind: "fish", vw: 7.6, speed: 15.7, opacity: 0.62, blur: 0.04, beat: 7.4, art: FISH_REAL },
+  { kind: "fish", vw: 7.0, speed: 13.3, opacity: 0.54, blur: 0.02, beat: 6.8, art: FISH_REAL },
+  { kind: "fish", vw: 6.4, speed: 14.1, opacity: 0.47, blur: 0.23, beat: 7.9, art: FISH_REAL },
+  { kind: "fish", vw: 5.8, speed: 9.6, opacity: 0.4, blur: 0.12, beat: 6.4, art: FISH_REAL },
+  { kind: "prawn", vw: 7.8, speed: 12.4, opacity: 0.68, blur: 0.46, beat: 4.2, art: PRAWN },
+  { kind: "prawn", vw: 6.4, speed: 14.6, opacity: 0.51, blur: 0.19, beat: 3.7, art: PRAWN },
+  { kind: "prawn", vw: 5.4, speed: 9.1, opacity: 0.4, blur: 0.15, beat: 4.9, art: PRAWN },
+  { kind: "octopus", vw: 6.6, speed: 14.2, opacity: 0.65, blur: 0.21, beat: 5.6, art: OCTOPUS },
+  { kind: "octopus", vw: 7.8, speed: 10.5, opacity: 0.48, blur: 0.1, beat: 6.9, art: OCTOPUS },
 ];
 
 /**

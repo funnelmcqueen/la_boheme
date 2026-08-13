@@ -68,8 +68,13 @@ export const WAVES = [
 ];
 
 /**
- * The basin. Soft walls at 3–67% × 3–72% of the column — the part actually
+ * The basin. Soft walls at 3–93% × 3–88% of the column — the part actually
  * visible once the horizontal and vertical masks are accounted for.
+ *
+ * It was 67% × 72% of a column that was itself 52% of the hero, so the shoal had
+ * about a third of the screen to live in and gathered in one corner of it. The
+ * column is the whole hero now and both masks were softened, so the water they can
+ * use is very nearly all of it.
  *
  * Not a wrapping plane. Wrapping was tried and it empties the frame: once the
  * wave force reaches every creature they all drift the same way and leave
@@ -77,7 +82,7 @@ export const WAVES = [
  * things back well before the edge, so nothing ever leaves and nothing has to be
  * teleported back in.
  */
-export const BASIN = { x0: 0.03, x1: 0.67, y0: 0.03, y1: 0.72 };
+export const BASIN = { x0: 0.03, x1: 0.93, y0: 0.03, y1: 0.88 };
 
 /**
  * How far outside the exclusion surface the emblem's field is felt, as a fraction
@@ -173,19 +178,21 @@ export function step(s: Swimmer, basin: Basin, now: number, dt: number, maxRadiu
 
   // Wander: slow heading drift, so nothing swims in a straight line.
   s.wobble += s.wobbleRate * dt * (mote ? 0.4 : 1);
-  let heading = Math.atan2(s.vy, s.vx) + Math.sin(s.wobble) * 0.16 * dt;
+  // Less of their own mind than they had: the wave is meant to be what moves them.
+  let heading = Math.atan2(s.vy, s.vx) + Math.sin(s.wobble) * 0.1 * dt;
   let speed = Math.hypot(s.vx, s.vy) || s.speed;
   s.vx = Math.cos(heading) * speed;
   s.vy = Math.sin(heading) * speed;
 
   // Every passing front gives an outward shove, so the animals ride the waves
-  // instead of ignoring them.
+  // instead of ignoring them. The shove is most of their motion now — they cruise
+  // slowly and the water carries them.
   const dx = s.x - basin.originX;
   const dy = s.y - basin.originY;
   const distance = Math.hypot(dx, dy) || 1;
   const wave = waveForce(now, distance, maxRadius, s0);
   if (wave > 0.02) {
-    const push = wave * (mote ? 520 : 260) * dt;
+    const push = wave * (mote ? 560 : 380) * dt;
     s.vx += (dx / distance) * push;
     s.vy += (dy / distance) * push;
   }
@@ -238,7 +245,13 @@ export function step(s: Swimmer, basin: Basin, now: number, dt: number, maxRadiu
   const bx1 = basin.width * BASIN.x1;
   const by0 = basin.height * BASIN.y0;
   const by1 = basin.height * BASIN.y1;
-  const wallK = mote ? 1.4 : 2.4;
+  // Stiffer than they were. The wave push went from 260 to 380 so the shoal rides
+  // the fronts rather than ignoring them, and the basin is now the whole hero
+  // rather than a third of it — both make it easier to be carried out of frame. At
+  // 2.4 the population visibly oscillated, dropping about a creature and a half
+  // over ten seconds and recovering. seascape.mjs catches that; swim.test.ts
+  // catches the simpler version of it.
+  const wallK = mote ? 3.2 : 5.2;
   if (s.x < bx0) s.vx += (bx0 - s.x) * wallK * dt;
   else if (s.x > bx1) s.vx -= (s.x - bx1) * wallK * dt;
   if (s.y < by0) s.vy += (by0 - s.y) * wallK * dt;
@@ -259,10 +272,25 @@ export function step(s: Swimmer, basin: Basin, now: number, dt: number, maxRadiu
   const near = Math.max(Math.min(1, wave * 0.8), Math.max(0, 1 - distance / (basin.hole * 2.1)));
 
   if (s.kind === "fish") {
-    // Level far from the emblem, free to climb close to it, so a fish can swim
-    // around the rosette instead of pressing against it.
-    s.vy *= 0.9 + 0.09 * near;
-    const cap = (0.22 + 1.3 * near) * Math.abs(s.vx);
+    /**
+     * Level far from the emblem, free to climb close to it, so a fish can swim
+     * around the rosette instead of pressing against it.
+     *
+     * `escaping` is the second exception, and it is the same bug DECISIONS
+     * describes under *Axis constraints need a stated exception* — the one that
+     * was fixed for the octopus and left in place here. A fish carried above the
+     * ceiling by a wave front cannot get back down: the soft wall pushes it
+     * downward, the cap crushes that correction to 22% of its horizontal speed,
+     * and it sits there. Measured after the basin widened — one fish parked at
+     * y = −27 for 252 of 250 samples, which is what "population holds" was
+     * failing on.
+     *
+     * So the cap relaxes when the wall is already pushing it back inside.
+     */
+    const escaping =
+      (s.y < by0 && s.vy > 0) || (s.y > by1 && s.vy < 0) ? 1 : 0;
+    s.vy *= 0.9 + 0.09 * Math.max(near, escaping);
+    const cap = (0.22 + 1.3 * Math.max(near, escaping)) * Math.abs(s.vx);
     if (Math.abs(s.vy) > cap) s.vy = cap * (s.vy < 0 ? -1 : 1);
     // A front can overpower a fish and drive it the other way. Rather than swim
     // backwards it turns, with a deadband so the facing does not flicker while it

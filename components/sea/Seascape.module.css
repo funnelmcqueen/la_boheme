@@ -21,7 +21,10 @@
   left: 0;
   top: 0;
   bottom: 0;
-  width: 52%;
+  /* The whole hero, not the left column. At 52% the shoal was confined to just
+     over a third of the screen and read as a cluster in one corner. The panel
+     photograph is opaque and above it, so the water simply passes behind. */
+  width: 100%;
   z-index: 0;
   overflow: hidden;
   pointer-events: none;
@@ -38,7 +41,7 @@
    * them, which is why the column read as flat colour rather than water.
    */
   mask-image:
-    linear-gradient(90deg, #000 78%, transparent 100%),
+    linear-gradient(90deg, #000 92%, transparent 100%),
     linear-gradient(180deg, #000 68%, rgba(0, 0, 0, 0.82) 86%, rgba(0, 0, 0, 0.55) 100%),
     radial-gradient(circle at var(--vj-ox) var(--vj-oy),
       transparent 0, transparent var(--vj-hole), #000 calc(var(--vj-hole) * 2.1));
@@ -54,12 +57,6 @@
     rgba(181, 118, 82, 0.09) 28%,
     rgba(140, 110, 120, 0.075) 58%,
     rgba(94, 80, 101, 0.115) 100%);
-}
-
-@media (max-width: 1000px) {
-  .sea {
-    width: 100%;
-  }
 }
 
 /* Surface light broken up and thrown down into the first few metres. */
