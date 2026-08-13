@@ -128,26 +128,31 @@ export function Peshku({ copy }: Props) {
 
   return (
     <section id="peshku">
-      <div className={`vj-column ${styles.split} vj-split`}>
-        <div>
+      <div className="vj-column">
+        {/* Not a split. Two portrait photographs stacked in one half made that
+            column 1,406px against 457px of text — the heading floated in the
+            middle of 949px of imbalance and the twelve species were squeezed into
+            two 14px columns beside it. The list is the substance of this section,
+            so it gets the full width and the photographs run as a pair. */}
+        <div className={styles.catchHead}>
           <p className="vj-eyebrow">{copy.catch.eyebrow}</p>
           <h2>{copy.catch.heading}</h2>
           <p>{copy.catch.body}</p>
-
-          <ul className={styles.species}>
-            {group.items.map((item) => (
-              <li key={item.id}>
-                <span>{item.name[copy.lang]}</span>
-                <span className={styles.perKilo}>{formatPrice(item, copy.lang)}</span>
-              </li>
-            ))}
-          </ul>
         </div>
 
-        <div className={styles.stack}>
-          <Photo slug="catch-ice" copy={copy} sizes="(max-width: 900px) 100vw, 42vw" />
-          <Photo slug="lobster" copy={copy} sizes="(max-width: 900px) 100vw, 42vw" />
+        <div className={styles.catchFrames}>
+          <Photo slug="catch-ice" copy={copy} sizes="(max-width: 900px) 100vw, 46vw" />
+          <Photo slug="lobster" copy={copy} sizes="(max-width: 900px) 100vw, 46vw" />
         </div>
+
+        <ul className={styles.species}>
+          {group.items.map((item) => (
+            <li key={item.id}>
+              <span>{item.name[copy.lang]}</span>
+              <span className={styles.perKilo}>{formatPrice(item, copy.lang)}</span>
+            </li>
+          ))}
+        </ul>
       </div>
     </section>
   );

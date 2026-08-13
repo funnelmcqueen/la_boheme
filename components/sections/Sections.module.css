@@ -188,22 +188,54 @@
 
 /* ---------- the catch ---------- */
 
+/* ---------- the catch ---------- */
+
+.catchHead {
+  max-width: 46ch;
+}
+
+/**
+ * The pair, landscape. As stacked portraits they were 690px each in a half-width
+ * column and dwarfed everything beside them; side by side at 3:2 they are the
+ * width of the page and about a third of the height.
+ */
+.catchFrames {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: clamp(12px, 1.6vw, 22px);
+  margin-top: clamp(28px, 3.5vw, 48px);
+}
+
+.catchFrames img {
+  width: 100%;
+  height: auto;
+  aspect-ratio: 3 / 2;
+  object-fit: cover;
+  display: block;
+  filter: var(--imgfx);
+}
+
+/**
+ * Twelve species across the full width. Three columns rather than two, and a
+ * point larger, because this list is the section — the photographs are the proof
+ * behind it, not the other way round.
+ */
 .species {
   list-style: none;
-  margin: 26px 0 0;
+  margin: clamp(30px, 4vw, 52px) 0 0;
   padding: 0;
-  columns: 2;
-  column-gap: clamp(20px, 3vw, 44px);
+  columns: 3;
+  column-gap: clamp(28px, 4vw, 64px);
 }
 
 .species li {
   display: flex;
   justify-content: space-between;
   gap: 14px;
-  padding: 7px 0;
+  padding: 10px 0;
   border-bottom: 1px solid var(--line);
   break-inside: avoid;
-  font-size: 14px;
+  font-size: 15px;
 }
 
 .perKilo {
@@ -212,12 +244,17 @@
   white-space: nowrap;
 }
 
-.stack {
-  display: grid;
-  gap: clamp(16px, 2vw, 26px);
+@media (max-width: 1000px) {
+  .species {
+    columns: 2;
+  }
 }
 
-@media (max-width: 560px) {
+@media (max-width: 620px) {
+  .catchFrames {
+    grid-template-columns: 1fr;
+  }
+
   .species {
     columns: 1;
   }
