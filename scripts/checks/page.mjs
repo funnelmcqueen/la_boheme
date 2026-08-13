@@ -66,6 +66,14 @@ await withBrowser(async (browser) => {
      *
      * Absolutely positioned descendants are skipped: a watermark or a decorative
      * layer can sit above the content without being the thing a reader sees first.
+     *
+     * And every candidate is clamped to its clipping ancestors, because
+     * `getBoundingClientRect` reports an element's own geometry whether or not any
+     * of it is visible. The footer's emblem is the case in point: its rings are
+     * `<use>` elements that rotate, so their rects run 4px past the dome that
+     * clips them, and the gap under the last separator measured 46 against a real
+     * 50. BUILD-BRIEF §10 has this as "measure against the clipped edge, not the
+     * element" — it cost a day the first time.
      */
     const firstPainted = (root) => {
       let top = Infinity;
@@ -83,7 +91,15 @@ await withBrowser(async (browser) => {
         if (cs.display === "none" || cs.visibility === "hidden") continue;
         const box = el.getBoundingClientRect();
         if (box.width === 0 || box.height === 0) continue;
-        if (box.top < top) top = box.top;
+
+        // Where this element actually starts being visible.
+        let visibleTop = box.top;
+        for (let a = el.parentElement; a && a !== root.parentElement; a = a.parentElement) {
+          if (getComputedStyle(a).overflow === "visible") continue;
+          visibleTop = Math.max(visibleTop, a.getBoundingClientRect().top);
+        }
+        if (visibleTop >= box.bottom) continue; // clipped away entirely
+        if (visibleTop < top) top = visibleTop;
       }
       return top === Infinity ? root.getBoundingClientRect().top : top;
     };

@@ -24,9 +24,9 @@ export const en: Copy = {
     heading: "A DJ every day from midday.",
     body: "Loungers down to the water, tables in the shade, music until night.",
     frames: [
-      { time: "13:00", label: "The music" },
-      { time: "17:00", label: "The loungers" },
-      { time: "20:00", label: "Golden hour" },
+      { label: "The music" },
+      { label: "The loungers" },
+      { label: "Golden hour" },
     ],
   },
 
@@ -101,7 +101,6 @@ export const en: Copy = {
     address: "Address",
     hours: "Hours",
     bookings: "Bookings",
-    venues: "Venues",
     instagram: "Instagram",
   },
 

@@ -30,7 +30,7 @@ export interface Copy {
     eyebrow: string;
     heading: string;
     body: string;
-    frames: { time: string; label: string }[];
+    frames: { label: string }[];
   };
 
   /** The one full-width break, where the beach ends and the restaurant begins. */
@@ -95,7 +95,6 @@ export interface Copy {
     address: string;
     hours: string;
     bookings: string;
-    venues: string;
     instagram: string;
   };
 

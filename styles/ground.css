@@ -35,12 +35,51 @@ body {
   }
 }
 
+/**
+ * The ground, and the light in it.
+ *
+ * Flat colour behind a whole page reads as a backdrop rather than as water — the
+ * hero has the seascape and everything below it had nothing, so the lower half of
+ * the descent looked empty rather than deep.
+ *
+ * What is added is light, not motion: a shaft falling from the upper left, a
+ * second weaker one from the right, and a broad pool low down where the water
+ * would be carrying the least of it. All of them are painted once, on a layer
+ * that is already `position: fixed` and already composited — there is no
+ * per-frame cost, which matters on a page that spent a day getting its main
+ * thread down.
+ *
+ * They read through --lamp and --shell, so they warm and cool with the descent
+ * along with everything else, and they fade out as the light would: `--deep`
+ * runs 0 to 0.42 below thirty metres, so the shafts are strongest at the surface
+ * and nearly gone at the bottom.
+ */
 .vj-ground {
   position: fixed;
   inset: 0;
   z-index: -1;
   background: var(--ground);
   pointer-events: none;
+}
+
+.vj-ground::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  opacity: calc(1 - var(--deep, 0) * 1.9);
+  background:
+    linear-gradient(163deg, transparent 12%, color-mix(in srgb, var(--lamp) 9%, transparent) 27%, transparent 46%),
+    linear-gradient(198deg, transparent 30%, color-mix(in srgb, var(--lamp) 5%, transparent) 47%, transparent 63%),
+    radial-gradient(120% 70% at 78% 8%, color-mix(in srgb, var(--lamp) 11%, transparent), transparent 58%);
+}
+
+.vj-ground::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(90% 55% at 22% 96%, color-mix(in srgb, var(--shell) 13%, transparent), transparent 62%),
+    linear-gradient(180deg, transparent 52%, color-mix(in srgb, var(--ground) 60%, #000) 100%);
 }
 
 /* Grain sits over everything, including the photographs, so the page holds

@@ -24,9 +24,9 @@ export const sq: Copy = {
     heading: "DJ çdo ditë nga mesdita.",
     body: "Shezlongë deri te uji, tavolina nën hije, muzikë deri natën.",
     frames: [
-      { time: "13:00", label: "Muzika" },
-      { time: "17:00", label: "Shezlongët" },
-      { time: "20:00", label: "Ora e artë" },
+      { label: "Muzika" },
+      { label: "Shezlongët" },
+      { label: "Ora e artë" },
     ],
   },
 
@@ -100,7 +100,6 @@ export const sq: Copy = {
     address: "Adresa",
     hours: "Orari",
     bookings: "Rezervime",
-    venues: "Lokalet",
     instagram: "Instagram",
   },
 

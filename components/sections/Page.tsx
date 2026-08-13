@@ -46,7 +46,7 @@ export function VenuePage({
       <Peshku copy={copy} venue={venue} />
       <Vererat copy={copy} venue={venue} />
       <Fleuron />
-      <Footer copy={copy} venue={venue} venues={venues} />
+      <Footer copy={copy} venue={venue} />
     </>
   );
 }

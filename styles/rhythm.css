@@ -14,7 +14,17 @@
  * middle of the menu.
  */
 main > section {
-  padding: clamp(80px, 11vw, 150px) clamp(24px, 6vw, 90px);
+  /**
+   * Vertical padding is half of a join, not a whole one: two sections meeting
+   * contribute a bottom and a top, so this value doubles everywhere it matters.
+   * It was clamp(80px, 11vw, 150px), which put 300px of empty page between every
+   * pair at desktop, 198 at 900 and 160 on a phone — measured identical at all
+   * five interior joins, so it was the rhythm rather than any one boundary. 100px
+   * was still too loose; this is the second pass.
+   *
+   * The horizontal value is unchanged; only the vertical was loose.
+   */
+  padding: clamp(44px, 5.5vw, 76px) clamp(24px, 6vw, 90px);
 }
 
 .vj-column {

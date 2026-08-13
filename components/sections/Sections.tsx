@@ -43,13 +43,17 @@ export function Atmosfera({ copy }: Props) {
         </div>
       </section>
 
+      {/* A triptych. The labels sit under the frames rather than on them: white
+          type laid over a photograph is legible or not depending on the
+          photograph, and these three are a DJ booth, white loungers and a sunset.
+          Clock times went with the overlay — the copy already says "from midday",
+          and three timestamps read as a schedule for something that is not one. */}
       <section className={styles.strip} aria-label={copy.atmosfera.eyebrow}>
         {["dj", "loungers", "golden-hour"].map((slug, i) => (
           <figure key={slug} className={styles.frame}>
             <Photo slug={slug} copy={copy} sizes="(max-width: 900px) 100vw, 33vw" />
             <figcaption className={styles.frameCaption}>
-              <span className={styles.frameTime}>{copy.atmosfera.frames[i].time}</span>
-              <span className={styles.frameLabel}>{copy.atmosfera.frames[i].label}</span>
+              {copy.atmosfera.frames[i].label}
             </figcaption>
           </figure>
         ))}
@@ -217,59 +221,54 @@ function Houses({ note }: { note: string }) {
   );
 }
 
-export function Footer({ copy, venue, venues }: Props & { venues: Venue[] }) {
+export function Footer({ copy, venue }: Props) {
   return (
     <footer className={styles.footer}>
-      <div className={`vj-column ${styles.footerGrid}`}>
-        <div>
-          <span className={styles.footerMaster}>La Bohème</span>
-          <span className={styles.footerVenue}>
-            {venue.name} · {venue.city[copy.lang]}
-          </span>
-        </div>
+      <div className={`vj-column ${styles.footerInner}`}>
+        {/* The mark closes the page the way it opened it. */}
+        <Emblem variant="mark" className={styles.footerMark} />
 
-        <div>
-          <p className="vj-eyebrow">{copy.footer.address}</p>
-          <p className={styles.footerLine}>
-            {venue.address.street}, {venue.address.locality} {venue.address.postalCode}
-            <br />
-            {venue.address.country[copy.lang]}
-          </p>
-          <p className="vj-eyebrow">{copy.footer.hours}</p>
-          <p className={styles.footerLine}>
-            {copy.chrome.open}
-          </p>
-        </div>
+        <span className={styles.footerMaster}>La Bohème</span>
+        <span className={styles.footerVenue}>
+          {venue.name} · {venue.city[copy.lang]}
+        </span>
 
-        <div>
-          <p className="vj-eyebrow">{copy.footer.bookings}</p>
-          <p className={styles.footerLine}>
-            <a href={telHref(venue)} className={styles.footerLink}>
-              {displayPhone(venue)}
-            </a>
-            <br />
-            <a
-              href={whatsappHref(venue, copy, "table")}
-              target="_blank"
-              rel="noopener"
-              className={styles.footerLink}
-            >
-              {copy.cta.whatsapp}
-            </a>
-            <br />
-            <a href={venue.instagram} target="_blank" rel="noopener" className={styles.footerLink}>
-              {copy.footer.instagram}
-            </a>
-          </p>
+        <div className={styles.footerGrid}>
+          <div>
+            <p className="vj-eyebrow">{copy.footer.address}</p>
+            <p className={styles.footerLine}>
+              {venue.address.street}, {venue.address.locality} {venue.address.postalCode}
+              <br />
+              {venue.address.country[copy.lang]}
+            </p>
+          </div>
 
-          <p className="vj-eyebrow">{copy.footer.venues}</p>
-          <ul className={styles.venueList}>
-            {venues.map((entry) => (
-              <li key={entry.slug}>
-                {entry.name} · {entry.city[copy.lang]}
-              </li>
-            ))}
-          </ul>
+          <div>
+            <p className="vj-eyebrow">{copy.footer.hours}</p>
+            <p className={styles.footerLine}>{copy.chrome.open}</p>
+          </div>
+
+          <div>
+            <p className="vj-eyebrow">{copy.footer.bookings}</p>
+            <p className={styles.footerLine}>
+              <a href={telHref(venue)} className={styles.footerLink}>
+                {displayPhone(venue)}
+              </a>
+              <br />
+              <a
+                href={whatsappHref(venue, copy, "table")}
+                target="_blank"
+                rel="noopener"
+                className={styles.footerLink}
+              >
+                {copy.cta.whatsapp}
+              </a>
+              <br />
+              <a href={venue.instagram} target="_blank" rel="noopener" className={styles.footerLink}>
+                {copy.footer.instagram}
+              </a>
+            </p>
+          </div>
         </div>
       </div>
     </footer>
