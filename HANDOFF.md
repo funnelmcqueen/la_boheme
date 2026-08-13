@@ -17,9 +17,15 @@ test` is 52 green, `npm run check` is five browser checks green, `npm run
 typecheck` and `npm run build` are clean, and all four routes plus the icon
 prerender static.
 
-**It has never been deployed.** A Vercel project called `vajana` exists and this
-directory is linked to it, but nothing has been pushed to it. See *Before it goes
-live* — the first item there is not optional.
+**It is deployed, but not published.** The Vercel project `funnelmcqueen/vajana`
+has a dozen deployments, several of them Production, and this directory is linked
+to it. They are not public: Vercel deployment protection redirects them to a login,
+and they carry `X-Robots-Tag: noindex`, so nothing is readable or indexable without
+the account. There is no custom domain attached.
+
+So the site can be shown to someone with access and cannot be found by anyone else
+— which is the right state for it, because of the first item under *Before it goes
+live*. That one is not optional.
 
 Measured on the finished page at 1440×900: the descent runs 0 → 54 m over one
 scroll, both interior separators measure 50/50 between visible edges, the page is
@@ -79,7 +85,7 @@ quote, GBP fixes, a trademark filing, commentary on the mockup. Delete it from t
 public repo or make the repo private. The client can find it.
 
 **5. Lighthouse has only ever been run against localhost**, on a machine that was
-competing for the CPU. Mobile measured 69 → 82 across the performance pass. 82 is
+competing for the CPU — never against a deployment. Mobile measured 69 → 82 across the performance pass. 82 is
 the accepted number and 90 was explicitly ruled out — see DECISIONS — but it should
 be re-measured once there is a real URL.
 
