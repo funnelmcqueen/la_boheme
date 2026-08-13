@@ -53,6 +53,28 @@ export const IMAGES: ImageSpec[] = [
     alt: { sq: "Dy gota në perëndim", en: "Two glasses at sunset" },
   },
   {
+    /**
+     * Ungraded, deliberately. BUILD-BRIEF §11: he was cropped tight, desaturated
+     * to 30% and darkened to survive a near-black page that no longer exists. On
+     * blue water the original needs nothing — he is photographed against the same
+     * sea, in the Vajana jacket, and it is the only image on the site where the
+     * brand appears in the world rather than on the screen. Never composite him
+     * onto a new background.
+     *
+     * No crop either. §11's `150, 372, 1230, 1722` existed only to cut the
+     * screenshot's own chrome off a screen capture; this is the camera frame the
+     * capture was made from, 2700×3375 and already 4:5.
+     */
+    slug: "chef",
+    source: "GABRIEL_ISLAMI.jpg",
+    width: 2700,
+    ungraded: true,
+    alt: {
+      sq: "Gabriel Islami, kryekuzhinier, përballë gjirit të Vlorës",
+      en: "Gabriel Islami, executive chef, facing the bay of Vlorë",
+    },
+  },
+  {
     slug: "catch-ice",
     source: "IMG_7920.JPG",
     width: 1400,
@@ -77,23 +99,5 @@ export const IMAGES: ImageSpec[] = [
     alt: { sq: "Kavaleti përballë gjirit", en: "The easel facing the bay" },
   },
 ];
-
-/**
- * Blocked — the source file is not in the supplied set.
- *
- * BUILD-BRIEF §11 gives the chef's crop as `150, 372, 1230, 1722` and notes that
- * anything above y=372 includes "the screenshot's own chrome". That makes the
- * source a 1380px-wide screen capture, and the delivered photography is all camera
- * originals at 2160×2700 and above. No frame in the set can take that crop.
- *
- * He runs ungraded when he arrives: he was cropped tight, desaturated and darkened
- * to survive a near-black page that no longer exists. On blue water the original
- * needs nothing — he is photographed against the same sea, in the Vajana jacket,
- * and it is the only image on the site where the brand appears in the world rather
- * than on the screen. Never composite him onto a new background.
- */
-export const BLOCKED = [
-  { slug: "chef", need: "the original screen capture, 1380px wide or larger" },
-] as const;
 
 export const imageBySlug = (slug: string) => IMAGES.find((i) => i.slug === slug)!;

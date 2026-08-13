@@ -93,9 +93,15 @@
  * the section does not need re-laying out when the frame arrives, and marked as
  * unfinished rather than filled with a stand-in that would read as a decision.
  */
-.portraitPending {
-  aspect-ratio: 1230 / 1722;
-  border: 1px dashed color-mix(in srgb, var(--lamp) 34%, transparent);
+/* The frame the photograph is actually in. The dashed placeholder that stood here
+   was sized to §11's crop of a screen capture; the camera original is 4:5. */
+.portrait img {
+  width: 100%;
+  height: auto;
+  aspect-ratio: 4 / 5;
+  object-fit: cover;
+  display: block;
+  filter: var(--imgfx);
 }
 
 .chefName {

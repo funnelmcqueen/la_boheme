@@ -72,10 +72,10 @@ export function Kuzhina({ copy }: Props) {
     <section id="kuzhina">
       <div className={`vj-column ${styles.split} vj-split`}>
         <div className={styles.portrait}>
-          {/* Blocked: the source is a screen capture that is not in the supplied
-              set — see content/images.ts. The slot keeps its shape so the section
-              does not have to be re-laid out when it arrives. */}
-          <div className={styles.portraitPending} aria-hidden="true" />
+          {/* Ungraded, and never composited onto a new background — he is against
+              the sea the rest of the page is about, in the jacket the wordmark is
+              embroidered on. See content/images.ts. */}
+          <Photo slug="chef" copy={copy} sizes="(max-width: 900px) 100vw, 42vw" />
         </div>
 
         <div>
