@@ -752,3 +752,51 @@ takes no pictures, plus one screenshot at the end. `entrance.mjs` has always wor
 that way, and its numbers were right the whole time while three ad-hoc probes
 disagreed with it. When a purpose-built check and a quick probe disagree, the check
 is the one that has been reviewed.
+
+### The shoal was never drawn
+
+Eleven creatures, sixty seconds of physics tests, three species with their own
+propulsion cues, a bounded basin, an inverse-square repulsion field, a keep-out
+ellipse tuned to three decimal places, and a documented thread in this file about
+799 clamp firings and 60 wordmark overlaps.
+
+None of it was visible. The stroke rule was
+
+    .creature :global(.d), .creature :global(.eng) { stroke: currentColor; ... }
+
+and `lib/creatures.ts` emits bare `<path>` elements with no class on them. The
+selector matched nothing, every creature computed to `stroke: none; fill: none`,
+and the entire shoal swam through the hero painting absolutely nothing. The
+`vector-effect` in the same block never applied either — which would have been the
+second failure waiting behind the first, since a 1.5 stroke in a 660-unit viewBox
+drawn at 160px lands at 0.36 device pixels.
+
+**Every check passed the whole time, and none of them was wrong to.** `swim.test.ts`
+runs the physics with no DOM at all. `seascape.mjs` reads positions off `__vjSea`
+and boxes off `getBoundingClientRect`. Both measure where the creatures *are*.
+Neither touches a pixel, so neither could tell the difference between a shoal and
+eleven empty divs on the same trajectories.
+
+The emblem has a whole test about exactly this failure — Emblem.test.ts measures
+*painted weight* at 92px precisely because "the attribute is present and has no
+effect" is the shape of the bug. The lesson was written down, tested for in one
+component, and not applied to the other one that strokes SVG.
+
+Fixed by matching elements rather than class names, so the generators can emit
+whatever they like:
+
+    .creature svg :is(path, polyline, polygon, circle, ellipse, line)
+
+`seascape.mjs` now asserts that every creature resolves a real stroke and carries
+`non-scaling-stroke`, which is the check that should have existed from the start.
+
+Two things made it survive so long. The mask compounded it — `.sea`'s downward
+fade ran `#000 46% / 0.35 at 74% / 0.12 at 100%`, and the shoal settles low in the
+basin, so even a correctly inked creature would have been at 3–20% of its own
+opacity down there. And the caustics and light shafts live inside the same masked
+layer, so the water read as flat colour, which made an empty-looking hero seem
+like a colour problem rather than a missing shoal. The fade now runs 68% / 0.82 /
+0.55, and the roster's opacities are lifted about 40%.
+
+If the water ever looks empty again, check that something is actually painting
+before tuning what it looks like.

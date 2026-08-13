@@ -27,7 +27,11 @@
   position: relative;
   z-index: 3;
   align-self: end;
-  padding: 68px clamp(28px, 4vw, 70px) 0 clamp(30px, 4.5vw, 76px);
+  /* Clears the fixed header. The column is bottom-aligned in a full-height row, so
+     this only bites when the column is tall enough to reach the top — which it is,
+     and the emblem's crown was sitting 12px under the header. */
+  padding: calc(var(--vj-header-h, 78px) + clamp(18px, 3vh, 40px))
+    clamp(28px, 4vw, 70px) 0 clamp(30px, 4.5vw, 76px);
 }
 
 .emblem {

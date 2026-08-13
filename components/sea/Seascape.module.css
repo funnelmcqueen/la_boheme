@@ -26,11 +26,20 @@
   overflow: hidden;
   pointer-events: none;
 
-  /* Faded out to the right, downward, and around the mark, so the water never
-     competes with the type or crowds the emblem. */
+  /**
+   * Faded out to the right, downward, and around the mark, so the water never
+   * competes with the type or crowds the emblem.
+   *
+   * The downward fade used to run #000 46% / 0.35 at 74% / 0.12 at 100%, which was
+   * far too steep: the shoal settles low in the basin, so every creature sat in
+   * the 12–35% band and was multiplied down to 3–20% of an already low opacity.
+   * They were rendering perfectly and could not be seen — and the caustics and
+   * light shafts, which live in the same masked layer, were being erased with
+   * them, which is why the column read as flat colour rather than water.
+   */
   mask-image:
-    linear-gradient(90deg, #000 74%, transparent 100%),
-    linear-gradient(180deg, #000 46%, rgba(0, 0, 0, 0.35) 74%, rgba(0, 0, 0, 0.12) 100%),
+    linear-gradient(90deg, #000 78%, transparent 100%),
+    linear-gradient(180deg, #000 68%, rgba(0, 0, 0, 0.82) 86%, rgba(0, 0, 0, 0.55) 100%),
     radial-gradient(circle at var(--vj-ox) var(--vj-oy),
       transparent 0, transparent var(--vj-hole), #000 calc(var(--vj-hole) * 2.1));
   mask-composite: intersect;
@@ -61,10 +70,11 @@
   top: -14%;
   height: 88%;
   background:
-    radial-gradient(40% 26% at 20% 16%, rgba(233, 186, 116, 0.21), transparent 62%),
-    radial-gradient(32% 22% at 60% 32%, rgba(199, 154, 98, 0.16), transparent 64%),
-    radial-gradient(46% 28% at 86% 10%, rgba(241, 205, 150, 0.15), transparent 60%),
-    radial-gradient(34% 22% at 44% 58%, rgba(155, 138, 160, 0.13), transparent 66%);
+    radial-gradient(40% 26% at 20% 16%, rgba(233, 186, 116, 0.28), transparent 62%),
+    radial-gradient(32% 22% at 60% 32%, rgba(199, 154, 98, 0.22), transparent 64%),
+    radial-gradient(46% 28% at 86% 10%, rgba(241, 205, 150, 0.2), transparent 60%),
+    radial-gradient(34% 22% at 44% 58%, rgba(155, 138, 160, 0.18), transparent 66%),
+    radial-gradient(52% 30% at 8% 72%, rgba(180, 214, 232, 0.13), transparent 64%);
   filter: blur(26px);
   mix-blend-mode: screen;
 }
@@ -95,7 +105,7 @@
   top: 18%;
   height: 130%;
   width: 20vw;
-  background: linear-gradient(90deg, transparent, rgba(180, 214, 232, 0.055), transparent);
+  background: linear-gradient(90deg, transparent, rgba(180, 214, 232, 0.085), transparent);
   filter: blur(34px);
   animation: vj-shaft ease-in-out infinite alternate;
 }
@@ -137,8 +147,24 @@
   display: block;
 }
 
-.creature :global(.d),
-.creature :global(.eng) {
+/**
+ * The shapes, inked.
+ *
+ * This selector was `.creature :global(.d), .creature :global(.eng)` and it never
+ * matched anything: lib/creatures.ts emits bare <path> elements with no class at
+ * all. Computed style on every creature was `stroke: none; fill: none` — so the
+ * entire shoal has been rendering, moving, colliding and clearing the emblem
+ * while painting nothing. Eleven invisible creatures.
+ *
+ * `vector-effect` matters as much as the stroke here, and for the reason the
+ * emblem has a whole test about: a 1.5 stroke in a 660-unit viewBox drawn at 160px
+ * lands at 0.36 device pixels. Declaring the stroke without the effect would have
+ * swapped one invisible shoal for another.
+ *
+ * Matched by element rather than by class so the generators can emit whatever they
+ * like — which is what went wrong the first time.
+ */
+.creature svg :is(path, polyline, polygon, circle, ellipse, line) {
   stroke: currentColor;
   fill: none;
   stroke-width: 1.5;

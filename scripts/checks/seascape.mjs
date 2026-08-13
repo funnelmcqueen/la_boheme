@@ -52,6 +52,48 @@ await withBrowser(async (browser) => {
     `off by ${placement.offBy.x},${placement.offBy.y}px · ellipse ${placement.rx}×${placement.ry}`,
   );
 
+  /**
+   * Do the creatures paint anything at all?
+   *
+   * Everything else in this file measures where the shoal *is* — positions off
+   * `__vjSea`, boxes off getBoundingClientRect. None of that touches a pixel, so
+   * all of it passed for the entire life of the project while the stroke rule
+   * (`.creature :global(.d), .creature :global(.eng)`) matched nothing at all and
+   * every creature computed to `stroke: none; fill: none`. Eleven invisible
+   * animals, physics tuned to three decimal places, and a green check.
+   *
+   * So: read the computed stroke off the real shapes, and require the effect that
+   * keeps it from scaling down to nothing.
+   */
+  const ink = await page.evaluate(() =>
+    [...document.querySelectorAll("[data-swimmer]")]
+      .filter((n) => n.dataset.swimmer !== "mote")
+      .map((n) => {
+        const shape = n.querySelector("path, polyline, polygon, circle, ellipse, line");
+        if (!shape) return { kind: n.dataset.swimmer, shapes: 0 };
+        const cs = getComputedStyle(shape);
+        return {
+          kind: n.dataset.swimmer,
+          shapes: n.querySelectorAll("path, polyline, polygon, circle, ellipse, line").length,
+          stroke: cs.stroke,
+          strokeWidth: cs.strokeWidth,
+          vectorEffect: cs.vectorEffect,
+        };
+      }),
+  );
+  const unpainted = ink.filter((c) => !c.shapes || c.stroke === "none" || c.stroke === "rgba(0, 0, 0, 0)");
+  const unscaled = ink.filter((c) => c.vectorEffect !== "non-scaling-stroke");
+  report.check(
+    "every creature actually paints",
+    unpainted.length === 0,
+    unpainted.length ? `${unpainted.length} of ${ink.length} have no stroke` : `${ink.length} inked, ${ink[0]?.stroke}`,
+  );
+  report.check(
+    "and its stroke does not scale away",
+    unscaled.length === 0,
+    unscaled.length ? `${unscaled.length} without non-scaling-stroke` : `stroke-width ${ink[0]?.strokeWidth}`,
+  );
+
   const result = await page.evaluate(async (runFor) => {
     const sea = window.__vjSea;
     const startClamps = sea.clamps();
