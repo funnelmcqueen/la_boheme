@@ -16,6 +16,9 @@
   --vj-oy: 25.5svh;
   --vj-hole: 140px;
   --vj-s0: 0.26;
+  /* Overwritten in pixels by measure(); the physics reads the same value, so the
+     drawn radius and the simulated one cannot disagree. */
+  --vj-wave-d: 70vw;
 
   position: absolute;
   left: 0;
@@ -253,9 +256,9 @@
   position: absolute;
   left: 50%;
   top: 50%;
-  width: 70vw;
-  height: 70vw;
-  margin: -35vw 0 0 -35vw;
+  width: var(--vj-wave-d);
+  height: var(--vj-wave-d);
+  margin: calc(var(--vj-wave-d) / -2) 0 0 calc(var(--vj-wave-d) / -2);
   overflow: visible;
   animation: vj-swellout linear infinite;
   /* Only the upper half — a full ring would read as sonar. */

@@ -9,39 +9,35 @@ import styles from "./Seascape.module.css";
 /**
  * What runs, and where.
  *
- * The shoal is expensive and the light is not, and those are two different
- * decisions. Measured on Lighthouse mobile, medians of five runs against a
- * production build:
+ * Measured on Lighthouse mobile, medians of five runs against a production build,
+ * when the question was whether a phone could carry the whole layer:
  *
- *     everything          perf 52   TBT 1069ms   paint 2093ms   CLS 0.025
- *     nothing             perf 66   TBT  382ms   paint 2010ms   CLS 0.004
- *     light, no swimmers  perf 64   TBT  376ms   paint 2360ms   CLS 0.004
+ *     everything          perf 52   TBT 1069ms   paint 2093ms
+ *     nothing             perf 66   TBT  382ms   paint 2010ms
+ *     light, no swimmers  perf 64   TBT  376ms   paint 2360ms
  *
- * Seventy-five elements, each promoted to its own compositing layer and each
- * written a fresh transform every frame, is most of a phone's main thread: it is
- * worth 14 points and 687ms of blocking time.
+ * Seventy-five elements each written a fresh transform every frame is most of a
+ * phone's main thread — 14 points and 687ms of blocking time. The light is a
+ * different order of cost entirely: two points, inside the run-to-run spread, and
+ * all of it paint rather than blocking, because rasterising a 26px blur once is
+ * not the same kind of work as writing 75 transforms a frame.
  *
- * The light is a different order of cost entirely — two points, inside the
- * run-to-run spread, and all of it paint rather than blocking time, because
- * rasterising a 26px blur once is not the same kind of work as writing 75
- * transforms a frame. So the caustics, the shafts, the surface and the wave
- * fronts stay everywhere and only the swimmers are desktop-only.
+ * So a phone gets the light, and a *thinned* shoal: six creatures and 24 motes
+ * against eleven and 64. Dropping the swimmers entirely was the cheaper answer and
+ * it cut the one thing the hero exists to say — you are already underwater, and the
+ * fish are the sentence that says it. Half the nodes is the compromise; the cost of
+ * this version is measured in the commit that introduced it.
  *
- * That distinction matters beyond the number. The page's whole claim is that you
- * arrive already underwater, and light moving in the water is most of what says
- * so. Dropping it would have made the idea desktop-only on the device this
- * restaurant's visitors actually hold.
+ * Under reduced motion nothing runs at all, the light included, and it has to be
+ * *absence* rather than `display:none` — hiding leaves the nodes and the loop,
+ * which is where the blocking time lives.
  *
- * It has to be *absence*, not `display:none` — hiding leaves the nodes and the
- * loop, which is where the blocking time lives.
- *
- * 1000px is the width Seascape.module.css already treats as the breakpoint where
- * the column stops being a column and goes full-bleed.
+ * 1000px is the width Seascape.module.css already treats as the breakpoint.
  */
 const DESKTOP = "(min-width: 1000px)";
 const STILL = "(prefers-reduced-motion: reduce)";
 
-type Mode = "none" | "light" | "full";
+type Mode = "none" | "thin" | "full";
 
 /**
  * The gate.
@@ -60,7 +56,7 @@ export function Seascape() {
     const still = window.matchMedia(STILL);
     // Under reduce nothing runs at all — every layer here is motion in the
     // vestibular sense, the light included.
-    const decide = () => setMode(still.matches ? "none" : wide.matches ? "full" : "light");
+    const decide = () => setMode(still.matches ? "none" : wide.matches ? "full" : "thin");
 
     decide();
     wide.addEventListener("change", decide);
@@ -71,7 +67,7 @@ export function Seascape() {
     };
   }, []);
 
-  return mode === "none" ? null : <Water swimmers={mode === "full"} />;
+  return mode === "none" ? null : <Water dense={mode === "full"} />;
 }
 
 /**
@@ -86,12 +82,16 @@ export function Seascape() {
  * A fish undulates on scaleX/scaleY, a prawn flicks laterally, an octopus pulses
  * its mantle — see Seascape.module.css.
  *
- * `swimmers: false` keeps the light and drops the shoal. The measurement still
- * has to run in that mode — the mask's hole and the wave fronts' start radius are
- * both read off the emblem's measured position, so light without a measure() is
- * light in the wrong place.
+ * `dense` is the desktop roster; without it the shoal is thinned to six.
  */
-function Water({ swimmers: withSwimmers }: { swimmers: boolean }) {
+function Water({ dense }: { dense: boolean }) {
+  /**
+   * A phone gets the shoal too, just fewer of them. Cutting it entirely was worth
+   * 14 points of Lighthouse and it also cut the one thing the hero is for — you
+   * are underwater, and the fish are the sentence that says so.
+   */
+  const creatures = dense ? CREATURES : CREATURES.slice(0, 6);
+  const motes = dense ? MOTES : MOTES.slice(0, 24);
   const sea = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -161,11 +161,31 @@ function Water({ swimmers: withSwimmers }: { swimmers: boolean }) {
         };
         root.style.setProperty("--vj-ox", `${originX.toFixed(1)}px`);
         root.style.setProperty("--vj-oy", `${originY.toFixed(1)}px`);
-        root.style.setProperty("--vj-hole", `${(emblem.offsetWidth * 0.78).toFixed(1)}px`);
-        // Each front begins at the dome's own radius. The wave svg is 70vw wide,
-        // so its untransformed radius is 0.35 of the viewport; measuring it with
-        // getBoundingClientRect would return the animated scale instead.
-        s0 = Math.min(0.55, Math.max(0.1, dome.offsetWidth / 2 / (window.innerWidth * 0.35)));
+        /**
+         * The hole the water leaves around the mark, and how far the wave has to
+         * travel to get out of it.
+         *
+         * These two were in different units and it broke the wave on phones. The
+         * hole is a multiple of the emblem; the wave was 70vw, a multiple of the
+         * viewport. On a desktop the emblem is a quarter of the screen and the
+         * fronts sweep well past the hole; on a phone it is nearly two thirds, and
+         * the rings swept 68px to 123px inside a hole that stayed transparent to
+         * 183px. Every front was drawn and every one was masked away.
+         *
+         * The diameter is now one measured number that CSS and the physics both
+         * read, so they cannot drift apart again — and the hole is proportionally
+         * smaller on a narrow screen, where a 0.78 multiple of a 235px emblem eats
+         * half the visible water.
+         */
+        const narrow = window.innerWidth < 1000;
+        const hole = emblem.offsetWidth * (narrow ? 0.46 : 0.78);
+        root.style.setProperty("--vj-hole", `${hole.toFixed(1)}px`);
+
+        const waveDiameter = Math.max(window.innerWidth * 0.7, hole * 4.4);
+        root.style.setProperty("--vj-wave-d", `${waveDiameter.toFixed(1)}px`);
+        maxRadius = waveDiameter / 2;
+
+        s0 = Math.min(0.55, Math.max(0.1, dome.offsetWidth / 2 / maxRadius));
         root.style.setProperty("--vj-s0", s0.toFixed(3));
       } else {
         const originX = width * 0.36;
@@ -177,18 +197,7 @@ function Water({ swimmers: withSwimmers }: { swimmers: boolean }) {
           emblemRX: hole, emblemRY: hole, markBottom: originY + hole, hole,
         };
       }
-      maxRadius = window.innerWidth * 0.35;
     };
-
-    // Light-only: measure, so the mask's hole and the wave fronts' start radius
-    // land on the emblem, and stop there. No spawn, no loop, no per-frame write,
-    // and none of the closures below ever built.
-    if (!withSwimmers) {
-      measure();
-      const onMeasure = () => measure();
-      window.addEventListener("resize", onMeasure);
-      return () => window.removeEventListener("resize", onMeasure);
-    }
 
     const init = () => {
       measure();
@@ -304,7 +313,7 @@ function Water({ swimmers: withSwimmers }: { swimmers: boolean }) {
       window.removeEventListener("resize", onResize);
       delete (window as typeof window & { __vjSea?: unknown }).__vjSea;
     };
-  }, [withSwimmers]);
+  }, [dense]);
 
   return (
     <div className={styles.sea} ref={sea} aria-hidden="true">
@@ -314,39 +323,35 @@ function Water({ swimmers: withSwimmers }: { swimmers: boolean }) {
       <div className={styles.shaft} style={{ left: "46%", animationDuration: "51s", animationDelay: "-12s" }} />
       <div className={styles.surface} />
 
-      {withSwimmers
-        ? MOTES.map((mote, i) => (
-            <i
-              key={i}
-              data-swimmer="mote"
-              data-speed={mote.speed}
-              className={styles.mote}
-              style={{ width: mote.size, height: mote.size, opacity: mote.opacity }}
-            />
-          ))
-        : null}
+      {motes.map((mote, i) => (
+        <i
+          key={i}
+          data-swimmer="mote"
+          data-speed={mote.speed}
+          className={styles.mote}
+          style={{ width: mote.size, height: mote.size, opacity: mote.opacity }}
+        />
+      ))}
 
-      {withSwimmers
-        ? CREATURES.map((spec, i) => (
-            <div
-              key={i}
-              data-swimmer={spec.kind}
-              data-speed={spec.speed}
-              className={`${styles.creature} ${styles[spec.kind]}`}
-              style={{ width: `${spec.vw}vw`, opacity: spec.opacity, filter: `blur(${spec.blur}px)` }}
-            >
-              {/* The propulsion cue lives here, one layer in, so it can never
-                  fight the heading the loop writes to the parent. */}
-              <i className={styles.cue} style={{ animationDuration: `${spec.beat}s` }}>
-                <svg
-                  viewBox={spec.art.viewBox}
-                  fill="none"
-                  dangerouslySetInnerHTML={{ __html: spec.art.body }}
-                />
-              </i>
-            </div>
-          ))
-        : null}
+      {creatures.map((spec, i) => (
+        <div
+          key={i}
+          data-swimmer={spec.kind}
+          data-speed={spec.speed}
+          className={`${styles.creature} ${styles[spec.kind]}`}
+          style={{ width: `${spec.vw}vw`, opacity: spec.opacity, filter: `blur(${spec.blur}px)` }}
+        >
+          {/* The propulsion cue lives here, one layer in, so it can never fight
+              the heading the loop writes to the parent. */}
+          <i className={styles.cue} style={{ animationDuration: `${spec.beat}s` }}>
+            <svg
+              viewBox={spec.art.viewBox}
+              fill="none"
+              dangerouslySetInnerHTML={{ __html: spec.art.body }}
+            />
+          </i>
+        </div>
+      ))}
 
       {/* Light crossing the water, so nothing in the water occludes it. */}
       <div className={styles.wave}>
