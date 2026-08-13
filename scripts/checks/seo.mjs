@@ -142,5 +142,35 @@ await withBrowser(async (browser) => {
   report.check("first tab reaches the skip link", /Kalo|Skip/.test(focus.text), `"${focus.text}"`);
   report.check("focus is visible in the accent", focus.outline !== "rgba(0, 0, 0, 0)", focus.outline);
 
+  /**
+   * robots.txt, and whether it agrees with where the site is actually served.
+   *
+   * The Vercel alias is public and every page on it carries a canonical pointing
+   * at SITE, so before the domain resolves a crawler is told the real page lives
+   * somewhere that may serve nothing. app/robots.ts blocks everything until
+   * VAJANA_LAUNCHED=1 is set, and this reports which state is live so nobody has
+   * to guess — it fails only if robots.txt is missing altogether, which is the one
+   * state that leaves the decision to the crawler.
+   */
+  {
+    const page = await browser.newPage();
+    const response = await page.goto(`${baseUrl()}/robots.txt`, { waitUntil: "domcontentloaded" });
+    const body = response && response.ok() ? (await page.evaluate(() => document.body.innerText)) : "";
+    await page.close();
+
+    const served = Boolean(response && response.ok()) && /user-?agent/i.test(body);
+    report.check("robots.txt is served", served, served ? "" : `HTTP ${response?.status() ?? "?"}`);
+
+    if (served) {
+      const blocking = /disallow:\s*\/\s*$/im.test(body);
+      report.note(
+        blocking ? "  crawling is BLOCKED (pre-launch)" : "  crawling is allowed",
+        blocking
+          ? "set VAJANA_LAUNCHED=1 once the domain resolves — see app/robots.ts"
+          : "make sure SITE matches the domain this is served from",
+      );
+    }
+  }
+
   report.finish();
 });
